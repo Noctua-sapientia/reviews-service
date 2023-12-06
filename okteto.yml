@@ -4,7 +4,7 @@ build:
 
 deploy:
   - helm upgrade --install reviews-service chart
-    --set reviews.image=${OKTETO_BUILD_reviews_SERVICE_IMAGE}
+    --set reviews.image=${OKTETO_BUILD_REVIEWS_SERVICE_IMAGE}
 
 dev:
   reviews-service:
