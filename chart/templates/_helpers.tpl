@@ -1,6 +1,3 @@
- 
-chart/templates/_helpers.tpl
-@@ -0,0 +1,44 @@
 {{/* vim: set filetype=mustache: */}}
 {{/*
 Expand the name of the chart.

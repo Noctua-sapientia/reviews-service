@@ -1,6 +1,6 @@
 apiVersion: v2
 name: reviews-service
-description: Reviews service for Noctua-Sapientia
+description: Reviews Service for Noctua-Sapientia
 type: application
 version: 0.1.0
 appVersion: "0.0.0"

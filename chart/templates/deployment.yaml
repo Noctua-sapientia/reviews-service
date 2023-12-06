@@ -9,12 +9,12 @@ spec:
   replicas: {{ .Values.reviews.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name : reviews
-      app.kubernetes.io/instance: {{ .Release.Name}}
+      app.kubernetes.io/name: reviews
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name : reviews
+        app.kubernetes.io/name: reviews
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       terminationGracePeriodSeconds: 0
