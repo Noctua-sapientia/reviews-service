@@ -3,7 +3,7 @@ build:
     context: .
 
 deploy:
-  - helm upgrade --install reviews-service chart
+  - helm upgrade --install reviews-service chart \
     --set reviews.image=${OKTETO_BUILD_REVIEWS_SERVICE_IMAGE}
 
 dev:
