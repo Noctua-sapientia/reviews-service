@@ -32,7 +32,8 @@ Devuelve todas las reviews o las de un libro concreto
 */
 router.get('/', function(req, res, next) {
   var bookId = parseInt(req.query.bookId,10);
-  if(bookId!=null) {
+  console.log(bookId!=null);
+  if(!isNaN(bookId)) {
     var result = book_reviews.filter(r => {
       return r.bookId == bookId;
     });
@@ -46,6 +47,7 @@ router.get('/', function(req, res, next) {
     }
 
   }else{
+    console.log("entra")
     res.send(book_reviews);
   }
   
@@ -95,8 +97,8 @@ router.put('/:id', function(req, res, next) {
   }else{
     res.status(400).send({
       status: 'error',
-      comment: 'Los datos no son correctos',
-      errorMessage: 'Los datos no son correctos'});
+      comment: 'Los datos no son correctos o no se ha encontrado la review',
+      errorMessage: 'Los datos no son correctos o no se ha encontrado la review'});
   }
   
 });

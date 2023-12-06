@@ -1,6 +1,11 @@
 {
   "name": "reviews",
   "version": "0.0.0",
+  "repository":{
+    "type": "git",
+    "url": "https://github.com/Noctua-sapientia/reviews-service.git"
+  },
+  "homepage": "https://github.com/Noctua-sapientia/reviews-service",
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
