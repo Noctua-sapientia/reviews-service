@@ -1,124 +1,117 @@
 var express = require('express');
 var router = express.Router();
-
-var sellerReviews = [
-  {
-    "id":1,
-    "sellerId": 1,
-    "customerId": 1,
-    "description": "Muy buen trato",
-    "rating": 5,
-    "creationDate": "fecha",
-    "modificationDate": "fecha2"
-   },
-   {
-    "id":2,
-    "sellerId": 2,
-    "customerId": 1,
-    "description": "Tarda mucho en enviar los pedidos",
-    "rating": 2,
-    "creationDate": "fecha",
-    "modificationDate": "fecha2"
-   }
-]
+var SellerReview = require('../models/sellerReview');
+var debug = require('debug')('sellerReviews-2:server');
 
 /* GET reviews of sellers listing. */
-router.get('/sellers', function(req, res, next) {
-  res.send(sellerReviews);
+router.get('/', async function(req, res, next) {
+  try {
+    const result = await SellerReview.find();
+    res.status(200).send(result.map((r) => r.cleanup()));
+  } catch(e) {
+    debug('DB  problem', e);
+    res.sendStatus(500);
+  }
 });
 
 
 /* GET /reviews/sellers/{id} */
-router.get('/sellers/:id', function(req, res, next) {
-  var sellerId = req.params.id;
-  var result = sellerReviews.find(r => {
-    return r.sellerId == sellerId;
-  })
-  if (result) {
-    res.status(200).send(result);
-  } else {
-    res.status(404).send({error: 'Review not found.'});
-  }
-});
+router.get('/:id', async function(req, res, next) {
+  var reviewId = req.params.id;
 
-/* GET /reviews/sellers?sellerid=id */
-router.get('/', function(req, res, next) {
-  var sellerId = parseInt(req.query.sellerId,10);
-  var result = sellerReviews.find(r => {
-    return r.sellerId == sellerId;
-  })
-  if (result) {
-    res.status(200).send(result);
-  } else {
-    res.status(404).send({error: `Review for sellerId ${sellerId} not found.`});
+  try {
+    const result = await SellerReview.findById(reviewId);
+    if (result) {
+      res.status(200).send(result.cleanup());
+    } else {
+      res.status(404).send({error: 'Review not found.'});
+    }
+  } catch(e) {
+    debug('DB  problem', e);
+    console.log(e);
+    res.sendStatus(500);
   }
 });
 
 
 /* POST sellerReview */
-router.post('/sellers', function(req, res, next) {
+router.post('/', async function(req, res, next) {
 
-  // Add data
-  var sellerReview = req.body;
-
-  // Add id
-  var maxId = 0;                                                                                
-  sellerReviews.forEach(review => {
-    if (review.id > maxId) {
-      maxId = review.id;
-  }});
-  sellerReview.id = maxId + 1;
+  const {sellerId, customerId, description, rating} = req.body;
 
   try {
-    sellerReviews.push(sellerReview);
-    res.status(201).send({ message: `New review id=${sellerReview.id} created successfully`});
-  } catch (e) {
-    return res.status(500).send({ error: "An error occurred while creating the review" });
-  }
+    if (!await SellerReview.exists({ sellerId: sellerId, customerId: customerId })) {
 
+      const sellerReview = new SellerReview({
+        sellerId,
+        customerId,
+        description,
+        rating
+      })
+      
+      await sellerReview.save();
+      res.sendStatus(201);
+    } else {
+      res.status(409).send(`There is already a review with sellerId=${sellerId} and customerId=${customerId}.`);
+    }
+  } catch (e) {
+    if (e.errors) {
+      debug("Validation problem when saving");
+      res.status(400).send({error: e.message});
+    } else {
+      debug('DB  problem', e);
+      res.sendStatus(500);
+    }
+  }
 });
 
 
 
 /* PUT sellerReview */
-router.put('/sellers/:id', function(req, res, next) {
+router.put('/:id', async function(req, res, next) {
+
   var reviewId = req.params.id;
-  var result = sellerReviews.find(r => {
-    return r.id == reviewId;
-  })
-
-  if (result) {
-
-    var item = {
-      "description": req.body.description,
-      "rating": req.body.rating,
-      "modificationDate": req.body.modificationDate
-    };
-
-    Object.assign(result, item);
-
-    res.status(200).send({ message: `Review id=${reviewId} updated successfully` });
-
-
-  } else {
+  var reviewData = req.body;
+  try {
+    var updatedReview = await SellerReview.findByIdAndUpdate(reviewId, reviewData, {
+      new: true
+    });
+    if (!updatedReview) {
+      return res.status(404).send('Review not found');
+    }
+    res.sendStatus(200);
+  } catch (e) {
+    debug('DB  problem', e);
     res.sendStatus(404);
   }
 });
 
 
-/* DELETE sellerReview from reviewId*/
-router.delete('/sellers/:id', function(req, res, next) {
+
+/* DELETE a sellerReviews by id*/
+router.delete('/:id', async function(req, res, next) {
   var reviewId = req.params.id;
 
-  var result = sellerReviews.find(r => {
-    return r.id == reviewId;
-  })
-  if (result) {
-    sellerReviews = sellerReviews.filter(r => {
-      return r.id != reviewId;
-    }) 
-    res.status(200).send({ message: `Seller review id=${reviewId} deleted successfully`});
-  } else {
-    res.sendStatus(404);
+  try {
+    await SellerReview.deleteOne({_id: reviewId});
+    res.sendStatus(200); // Ver qué responder si no hay ninguno
+  } catch (e) {
+      debug('DB  problem', e);
+      res.sendStatus(404);
   }
 });
+
+/* DELETE all sellerReviews from one seller by sellerId*/
+router.delete('/', async function(req, res, next) {
+  var sellerId = req.query.sellerId;
+
+  try {
+    await SellerReview.deleteMany({sellerId: sellerId});
+    res.sendStatus(200); // Ver qué responder si no hay ninguno
+  } catch (e) {
+      debug('DB  problem', e);
+      res.sendStatus(404);
+    }
+});
+
+module.exports = router;
