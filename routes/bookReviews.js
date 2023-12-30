@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 var fakeservice= require('../services/fakeservice');
+//var BookReview = require('../models/bookReview');
+//var debug = require('debug')('bookReviews-2:server');
 
 var book_reviews = [
   {"id": 1, "bookId": 2, "customerId": 3, "description": "El libro es genial, lo recomiendo",
@@ -30,26 +32,33 @@ router.get('/:reviewId', (req, res) => {
 /* GET reviews by bookId 
 Devuelve todas las reviews o las de un libro concreto
 */
-router.get('/', function(req, res, next) {
+router.get('/:bookId?', async function(req, res, next) {
   var bookId = parseInt(req.query.bookId,10);
-  console.log(bookId!=null);
-  if(!isNaN(bookId)) {
-    var result = book_reviews.filter(r => {
-      return r.bookId == bookId;
-    });
-    if (result){
-      res.send(result);
+  console.log(isNaN(bookId));
+  try{
+    if(!isNaN(bookId)) {
+      var result = book_reviews.filter(r => {
+        return r.bookId == bookId;
+      });
+      if (result){
+        res.send(result);
+      }else{
+        res.status(404).send({
+          status: 'error',
+          comment: 'No se han encontrado reviews para ese libro',
+          errorMessage: 'No se han encontrado reviews para ese libro'});
+      }
+  
     }else{
-      res.status(404).send({
-        status: 'error',
-        comment: 'No se han encontrado reviews para ese libro',
-        errorMessage: 'No se han encontrado reviews para ese libro'});
+      var result = book_reviews;//await BookReview.find();
+      res.send(result);
     }
 
-  }else{
-    console.log("entra")
-    res.send(book_reviews);
+  }catch(e){
+    debug("DB problem",e);
+    res.sendStatus(500);
   }
+  
   
 });
 
@@ -57,16 +66,17 @@ router.get('/', function(req, res, next) {
 /* POST review of a book. 
 Crea la review de un libro
 */
-router.post('/', function(req, res, next) {
-  var bookReview = req.body;
-  let maxId = 0;                                                                                
-  book_reviews.forEach(bookReview => {
-    if (bookReview.id > maxId) {
-      maxId = bookReview.id;
-    }});
-  bookReview.id = maxId + 1;
-  book_reviews.push(bookReview);
-  res.send(bookReview);
+router.post('/', async function(req, res, next) {
+  const {bookId,customerId,description,rating}  = req.body;
+  const now = new Date();
+ /* const bookReview = new BookReview({bookId, customerId, description, rating,now,now});
+  try{
+    await bookReview.save();
+    return res.sendStatus(201);
+  }catch(err){
+    debug("DB problem",e);
+    res.sendStatus(500);
+  }*/
 });
 
 /* PUT review of a book. 
