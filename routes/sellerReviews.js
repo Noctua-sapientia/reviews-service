@@ -6,7 +6,31 @@ var debug = require('debug')('sellerReviews-2:server');
 /* GET reviews of sellers listing. */
 router.get('/', async function(req, res, next) {
   try {
-    const result = await SellerReview.find();
+
+    const allowedSortFields = ['rating', 'date'];
+
+    let sortat;
+    if (req.query.sort){
+      if (allowedSortFields.includes(req.query.sort)) {
+        sortat = req.query.sort == 'date' ? 'createdAt' : 'rating';
+      } else {
+        return res.status(400).send("Invalid sort field. It must be 'rating' or 'date'. ");
+      }
+    }
+
+    const allowedOrderFields = ['asc', 'desc'];
+    let order;
+    if (req.query.order){
+      console.log(req.query.order);
+      console.log(allowedOrderFields.includes(req.query.order));
+      if (allowedOrderFields.includes(req.query.order)){
+        order = req.query.order;
+      } else {
+        return res.status(400).send("Invalid order field. It must be 'asc' or 'desc'. ");
+      }
+    }
+    
+    const result = await SellerReview.find().sort([[sortat, order]]);
     res.status(200).send(result.map((r) => r.cleanup()));
   } catch(e) {
     debug('DB  problem', e);
