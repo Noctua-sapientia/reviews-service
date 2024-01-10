@@ -33,13 +33,15 @@ router.get('/', async function(req, res, next) {
       order = 'desc';
     }
 
-    let filter = {};
+    let filters = {};
     if (req.query.sellerId) {
-      filter["sellerId"] = req.query.sellerId;
+      filters["sellerId"] = req.query.sellerId;
     }
-    console.log(filter);
+    if (req.query.customerId) {
+      filters["customerId"] = req.query.customerId;
+    }
     
-    const result = await SellerReview.find(filter).sort([[sortat, order]]);
+    const result = await SellerReview.find(filters).sort([[sortat, order]]);
     res.status(200).send(result.map((r) => r.cleanup()));
   } catch(e) {
     debug('DB  problem', e);
