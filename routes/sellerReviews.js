@@ -8,7 +8,6 @@ router.get('/', async function(req, res, next) {
   try {
 
     const allowedSortFields = ['rating', 'date'];
-
     let sortat;
     if (req.query.sort){
       if (allowedSortFields.includes(req.query.sort)) {
@@ -16,6 +15,8 @@ router.get('/', async function(req, res, next) {
       } else {
         return res.status(400).send("Invalid sort field. It must be 'rating' or 'date'. ");
       }
+    } else {
+      sortat = null;
     }
 
     const allowedOrderFields = ['asc', 'desc'];
@@ -28,9 +29,17 @@ router.get('/', async function(req, res, next) {
       } else {
         return res.status(400).send("Invalid order field. It must be 'asc' or 'desc'. ");
       }
+    } else {
+      order = 'desc';
     }
+
+    let filter = {};
+    if (req.query.sellerId) {
+      filter["sellerId"] = req.query.sellerId;
+    }
+    console.log(filter);
     
-    const result = await SellerReview.find().sort([[sortat, order]]);
+    const result = await SellerReview.find(filter).sort([[sortat, order]]);
     res.status(200).send(result.map((r) => r.cleanup()));
   } catch(e) {
     debug('DB  problem', e);
