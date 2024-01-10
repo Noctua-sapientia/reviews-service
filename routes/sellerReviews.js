@@ -6,7 +6,56 @@ var debug = require('debug')('sellerReviews-2:server');
 /* GET reviews of sellers listing. */
 router.get('/', async function(req, res, next) {
   try {
-    const result = await SellerReview.find();
+
+    const allowedSortFields = ['rating', 'date'];
+    let sortat;
+    if (req.query.sort){
+      if (allowedSortFields.includes(req.query.sort)) {
+        sortat = req.query.sort == 'date' ? 'createdAt' : 'rating';
+      } else {
+        return res.status(400).send("Invalid sort field. It must be 'rating' or 'date'. ");
+      }
+    } else {
+      sortat = null;
+    }
+
+    const allowedOrderFields = ['asc', 'desc'];
+    let order;
+    if (req.query.order){
+      console.log(req.query.order);
+      console.log(allowedOrderFields.includes(req.query.order));
+      if (allowedOrderFields.includes(req.query.order)){
+        order = req.query.order;
+      } else {
+        return res.status(400).send("Invalid order field. It must be 'asc' or 'desc'. ");
+      }
+    } else {
+      order = 'desc';
+    }
+
+    let filters = {};
+    if (req.query.sellerId) {
+      filters["sellerId"] = req.query.sellerId;
+    }
+    if (req.query.customerId) {
+      filters["customerId"] = req.query.customerId;
+    }
+
+    let limit;
+    if (req.query.limit) {
+      limit = req.query.limit
+    } else {
+      limit = null;
+    }
+
+    let skip;
+    if (req.query.skip) {
+      skip = req.query.skip;
+    } else {
+      skip = 0;
+    }
+    
+    const result = await SellerReview.find(filters).sort([[sortat, order]]).limit(limit).skip(skip);
     res.status(200).send(result.map((r) => r.cleanup()));
   } catch(e) {
     debug('DB  problem', e);
