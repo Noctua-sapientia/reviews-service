@@ -40,8 +40,22 @@ router.get('/', async function(req, res, next) {
     if (req.query.customerId) {
       filters["customerId"] = req.query.customerId;
     }
+
+    let limit;
+    if (req.query.limit) {
+      limit = req.query.limit
+    } else {
+      limit = null;
+    }
+
+    let skip;
+    if (req.query.skip) {
+      skip = req.query.skip;
+    } else {
+      skip = 0;
+    }
     
-    const result = await SellerReview.find(filters).sort([[sortat, order]]);
+    const result = await SellerReview.find(filters).sort([[sortat, order]]).limit(limit).skip(skip);
     res.status(200).send(result.map((r) => r.cleanup()));
   } catch(e) {
     debug('DB  problem', e);
