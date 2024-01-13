@@ -21,8 +21,8 @@ app.use('/api/v1/reviews/sellers', sellerReviewsRouter);
 
 // setup connection to mongo
 const mongoose = require('mongoose');
-const DB_URL = (process.env.DB_URL || 'mongodb://localhost/test');
-// const DB_URL = (process.env.DB_URL || "mongodb+srv://cservice:x1M7DWGFzx7iL131@contacts-service.gdzngil.mongodb.net/?retryWrites=true&w=majority")
+// const DB_URL = (process.env.DB_URL || 'mongodb://localhost/test');
+const DB_URL = (process.env.DB_URL || "mongodb+srv://rservice:9r3vqhBrfzdYAO2M@review-service.0izau0z.mongodb.net/?retryWrites=true&w=majority")
 console.log("Connecting to database: %s", DB_URL);
 
 mongoose.connect(DB_URL);
