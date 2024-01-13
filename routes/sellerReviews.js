@@ -3,6 +3,10 @@ var router = express.Router();
 var SellerReview = require('../models/sellerReview');
 var debug = require('debug')('sellerReviews-2:server');
 
+
+
+
+
 /* GET reviews of sellers listing. */
 router.get('/', async function(req, res, next) {
   try {
@@ -34,25 +38,30 @@ router.get('/', async function(req, res, next) {
     }
 
     let filters = {};
-    if (req.query.sellerId) {
+    if (!isNaN(req.query.sellerId)) {
       filters["sellerId"] = req.query.sellerId;
+    } else if (req.query.sellerId) {
+      return res.status(400).send("SellerId must be a number.");
     }
-    if (req.query.customerId) {
+    
+    if (!isNaN(req.query.customerId)) {
       filters["customerId"] = req.query.customerId;
+    } else if (req.query.customerId) {
+      return res.status(400).send("CustomerId must be a number.");
     }
 
-    let limit;
-    if (req.query.limit) {
+    let limit = null;
+    if (!isNaN(req.query.limit)) {
       limit = req.query.limit
-    } else {
-      limit = null;
+    } else if (req.query.limit) {
+      return res.status(400).send("Limit must be a number.");
     }
 
-    let skip;
-    if (req.query.skip) {
+    let skip = 0;
+    if (!isNaN(req.query.skip)) {
       skip = req.query.skip;
-    } else {
-      skip = 0;
+    } else if (req.query.skip) {
+      return res.status(400).send("Skip must be a number.");
     }
     
     const result = await SellerReview.find(filters).sort([[sortat, order]]).limit(limit).skip(skip);
