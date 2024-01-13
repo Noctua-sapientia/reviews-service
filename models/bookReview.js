@@ -1,33 +1,40 @@
-/*const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const bookReviewSchema = new mongoose.Schema({
-    id: mongoose.Schema.Types.ObjectId,
     bookId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Book' // Nombre del modelo referenciado
+        type: Number,
+        required: true
     },
     customerId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Customer' // Nombre del modelo referenciado
+        type: Number,
+        required: true
     },
     description: {
-      type: String,
-      required: false
+        type: String,
+        required: true
     },
     rating: {
-      type: Number,
-      required: false
-    },
-    creationDate: {
-        type: Date,
-        required: false
-    },
-    updatedDate: {
-        type: Date,
-        required: false
+        type: Number,
+        required: true
     }
+},
+{
+    // This option assigns "createdAt" and "updatedAt" to the schema: 
+    // https://stackoverflow.com/questions/12669615/add-created-at-and-updated-at-fields-to-mongoose-schemas
+    timestamps: true
 });
+
+bookReviewSchema.methods.cleanup = function() {
+    return {
+        id: this._id,
+        bookId: this.bookId,
+        customerId: this.customerId,
+        description: this.description,
+        rating: this.rating,
+        createdAt: this.createdAt
+    }
+}
 
 const BookReview= mongoose.model('BookReview', bookReviewSchema);
 
-module.exports = BookReview;*/
+module.exports = BookReview;

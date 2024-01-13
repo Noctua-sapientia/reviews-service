@@ -131,7 +131,7 @@ router.put('/:id', async function(req, res, next) {
     res.sendStatus(200);
   } catch (e) {
     debug('DB  problem', e);
-    res.sendStatus(404);
+    res.sendStatus(500);
   }
 });
 
@@ -146,7 +146,7 @@ router.delete('/:id', async function(req, res, next) {
     res.sendStatus(200); // Ver qué responder si no hay ninguno
   } catch (e) {
       debug('DB  problem', e);
-      res.sendStatus(404);
+      res.sendStatus(500);
   }
 });
 
@@ -159,7 +159,7 @@ router.delete('/', async function(req, res, next) {
     res.sendStatus(200); // Ver qué responder si no hay ninguno
   } catch (e) {
       debug('DB  problem', e);
-      res.sendStatus(404);
+      res.sendStatus(500);
     }
 });
 
