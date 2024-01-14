@@ -124,6 +124,7 @@ router.post('/', async function(req, res, next) {
 
 
 /* PUT sellerReview */
+/* PUT sellerReview */
 router.put('/:id', async function(req, res, next) {
 
   var reviewId = req.params.id;
@@ -135,10 +136,15 @@ router.put('/:id', async function(req, res, next) {
     if (!updatedReview) {
       return res.status(404).send('Review not found');
     }
-    res.sendStatus(200);
+    res.status(200).json(updatedReview.cleanup());
   } catch (e) {
-    debug('DB  problem', e);
-    res.sendStatus(500);
+    if (e.errors) {
+      debug("Validation problem when saving");
+      res.status(400).send({error: e.message});
+    } else {
+      debug('DB  problem', e);
+      res.sendStatus(500);
+    }
   }
 });
 
