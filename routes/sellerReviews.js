@@ -26,8 +26,6 @@ router.get('/', async function(req, res, next) {
     const allowedOrderFields = ['asc', 'desc'];
     let order;
     if (req.query.order){
-      console.log(req.query.order);
-      console.log(allowedOrderFields.includes(req.query.order));
       if (allowedOrderFields.includes(req.query.order)){
         order = req.query.order;
       } else {
