@@ -106,9 +106,9 @@ router.post('/', async function(req, res, next) {
       })
       
       await sellerReview.save();
-      res.sendStatus(201);
+      res.status(201).json(sellerReview.cleanup());
     } else {
-      res.status(409).send(`There is already a review with sellerId=${sellerId} and customerId=${customerId}.`);
+      res.status(409).json({ error: `There is already a review with sellerId=${sellerId} and customerId=${customerId}.` });
     }
   } catch (e) {
     if (e.errors) {

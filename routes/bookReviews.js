@@ -109,12 +109,9 @@ Create a new review for a book
 */
 
 router.post('/', async function(req, res, next) {
-
   const {bookId, customerId, description, rating} = req.body;
-
   try {
     if (!await BookReview.exists({ bookId: bookId, customerId: customerId })) {
-
       const bookReview = new BookReview({
         bookId,
         customerId,
@@ -123,9 +120,10 @@ router.post('/', async function(req, res, next) {
       })
       
       await bookReview.save();
-      res.sendStatus(201);
+      res.status(201).json(bookReview.cleanup());
     } else {
-      res.status(409).send(`There is already a review with bookId=${sellerId} and customerId=${customerId}.`);
+      res.status(409).json({ error: `There is already a review with bookId=${bookId} and customerId=${customerId}.` });
+
     }
   } catch (e) {
     if (e.errors) {
@@ -143,6 +141,7 @@ router.put('/:id', async function(req, res, next) {
 
   var reviewId = req.params.id;
   var reviewData = req.body;
+
   try {
     var updatedReview = await BookReview.findByIdAndUpdate(reviewId, reviewData, {
       new: true
@@ -165,7 +164,6 @@ router.put('/:id', async function(req, res, next) {
 /* DELETE a bookReview by id*/
 router.delete('/:id', async function(req, res, next) {
   var reviewId = req.params.id;
-
   try {
     await BookReview.deleteOne({_id: reviewId});
     res.sendStatus(200); 
