@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var fakeservice= require('../services/fakeservice');
 var BookReview = require('../models/bookReview');
 var debug = require('debug')('bookReviews-2:server');
+const { validateOrderField, validateSortField, validateLimit, validateSkip, validateRating } = require('./validator');
 
 /*var book_reviews = [
   {"id": 1, "bookId": 2, "customerId": 3, "description": "El libro es genial, lo recomiendo",
@@ -45,59 +45,49 @@ reviewId to find*/
 router.get('/', async function(req, res, next) {
   try {
 
-    const allowedSortFields = ['rating', 'date'];
     let sortat;
-    if (req.query.sort){
-      if (allowedSortFields.includes(req.query.sort)) {
-        sortat = req.query.sort == 'date' ? 'createdAt' : 'rating';
-      } else {
-        return res.status(400).send("Invalid sort field. It must be 'rating' or 'date'. ");
-      }
-    } else {
-      sortat = null;
+    try {
+      sortat = validateSortField(req.query.sort);
+    } catch (error) {
+      return res.status(400).send(error.message);
     }
 
-    const allowedOrderFields = ['asc', 'desc'];
     let order;
-    if (req.query.order){
-      if (allowedOrderFields.includes(req.query.order)){
-        order = req.query.order;
-      } else {
-        return res.status(400).send("Invalid order field. It must be 'asc' or 'desc'. ");
-      }
-    } else {
-      order = 'desc';
+    try {
+      order = validateOrderField(req.query.order);
+    } catch (error) {
+      return res.status(400).send(error.message);
     }
 
     let filters = {};
-    if (!isNaN(req.query.bookId)) {
+
+    if (req.query.bookId !== undefined) {
       filters["bookId"] = req.query.bookId;
-    } else if (req.query.bookId) {
-      return res.status(400).send("BookId must be a number.");
     }
-    
-    if (!isNaN(req.query.customerId)) {
+    if (req.query.customerId !== undefined) {
       filters["customerId"] = req.query.customerId;
-    } else if (req.query.customerId) {
-      return res.status(400).send("CustomerId must be a number.");
     }
 
     let limit = null;
-    if (!isNaN(req.query.limit)) {
-      limit = req.query.limit
-    } else if (req.query.limit) {
-      return res.status(400).send("Limit must be a number.");
+    try {
+      limit = validateLimit(req.query.limit);
+    } catch (error) {
+      return res.status(400).send(error.message);
     }
 
-    let skip = 0;
-    if (!isNaN(req.query.skip)) {
-      skip = req.query.skip;
-    } else if (req.query.skip) {
-      return res.status(400).send("Skip must be a number.");
+    let skip;
+    try {
+      skip = validateSkip(req.query.skip, 'Skip');
+    } catch (error) {
+      return res.status(400).send(error.message);
     }
     
     const result = await BookReview.find(filters).sort([[sortat, order]]).limit(limit).skip(skip);
-    res.status(200).send(result.map((r) => r.cleanup()));
+    if (result.length > 0) {
+      res.status(200).send(result.map((r) => r.cleanup()));
+    } else {
+      res.status(404).send({error: `Review not found.`});
+    }
   } catch(e) {
     debug('DB  problem', e);
     res.sendStatus(500);
