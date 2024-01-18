@@ -8,42 +8,29 @@ const { validateOrderField, validateSortField, validateLimit, validateSkip, vali
 router.get('/', async function(req, res, next) {
   try {
 
+    if ( !validateSortField(req.query.sort) ) { return res.status(400).send("Invalid sort field. It must be 'rating' or 'date'."); }
     let sortat;
-    try {
-      sortat = validateSortField(req.query.sort);
-    } catch (error) {
-      return res.status(400).send(error.message);
+    if (req.query.sort) {
+      sortat = req.query.sort === 'date' ? 'createdAt' : 'rating';
+    } else {
+      sortat = null;
     }
 
-    let order;
-    try {
-      order = validateOrderField(req.query.order);
-    } catch (error) {
-      return res.status(400).send(error.message);
-    }
+    
+    if ( !validateOrderField(req.query.order) ) { return res.status(400).send("Invalid order field. It must be 'asc' or 'desc'."); }
+    let order = req.query.order !== undefined ? req.query.order : 'desc';
 
     let filters = {};
 
-    if (req.query.sellerId !== undefined) {
-      filters["sellerId"] = req.query.sellerId;
-    }
-    if (req.query.customerId !== undefined) {
-      filters["customerId"] = req.query.customerId;
-    }
+    if (req.query.sellerId !== undefined) { filters["sellerId"] = req.query.sellerId; }
 
-    let limit = null;
-    try {
-      limit = validateLimit(req.query.limit);
-    } catch (error) {
-      return res.status(400).send(error.message);
-    }
+    if (req.query.customerId !== undefined) { filters["customerId"] = req.query.customerId; }
 
-    let skip;
-    try {
-      skip = validateSkip(req.query.skip, 'Skip');
-    } catch (error) {
-      return res.status(400).send(error.message);
-    }
+    if ( !validateLimit(req.query.limit) ) { return res.status(400).send("Limit must be a number greater than 0.") }
+    let limit = req.query.limit === undefined ? null : req.query.limit;
+
+    if ( !validateLimit(req.query.skip) ) { return res.status(400).send("Skip must be a non-negative number") }
+    let skip = req.query.skip === undefined ? null : req.query.skip;
     
     const result = await SellerReview.find(filters).sort([[sortat, order]]).limit(limit).skip(skip);
     if (result.length > 0) {
@@ -53,6 +40,7 @@ router.get('/', async function(req, res, next) {
     }
   } catch(e) {
     debug('DB  problem', e);
+    console.log(e);
     res.sendStatus(500);
   }
 });
@@ -82,12 +70,8 @@ router.post('/', async function(req, res, next) {
 
   const {sellerId, customerId, description, rating} = req.body;
 
-  try {
-    validateRating(rating);
-  } catch (error) {
-    return res.status(400).send(error.message);
-  }
-  
+  if ( !validateRating(rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
+
   try {
 
     if (!await SellerReview.exists({ sellerId: sellerId, customerId: customerId })) {
@@ -117,11 +101,13 @@ router.post('/', async function(req, res, next) {
 
 
 /* PUT sellerReview */
-/* PUT sellerReview */
 router.put('/:id', async function(req, res, next) {
 
   var reviewId = req.params.id;
   var reviewData = req.body;
+
+  if ( !validateRating(reviewData.rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
+
   try {
     var updatedReview = await SellerReview.findByIdAndUpdate(reviewId, reviewData, {
       new: true
