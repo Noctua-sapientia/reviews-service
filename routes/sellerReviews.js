@@ -166,14 +166,18 @@ router.delete('/:id', async function(req, res, next) {
 /* DELETE all sellerReviews from one seller by sellerId*/
 router.delete('/', async function(req, res, next) {
   var sellerId = req.query.sellerId;
+  if (sellerId != null) {
+    try {
+      await SellerReview.deleteMany({sellerId: sellerId});
+      res.sendStatus(200); // Ver qué responder si no hay ninguno
+    } catch (e) {
+        debug('DB  problem', e);
+        res.sendStatus(500);
+    }  
+  } else {
+    res.status(401).send('You must indicate sellerId');
+  }
 
-  try {
-    await SellerReview.deleteMany({sellerId: sellerId});
-    res.sendStatus(200); // Ver qué responder si no hay ninguno
-  } catch (e) {
-      debug('DB  problem', e);
-      res.sendStatus(500);
-    }
 });
 
 module.exports = router;
