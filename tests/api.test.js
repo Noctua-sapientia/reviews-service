@@ -63,7 +63,6 @@ describe("Reviews API", () => {
     });
 
     describe("POST /reviews/books", () => {
-        const bookReview = new BookReview({"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5});
         var dbSave;
         var dbExists;
 
@@ -76,7 +75,7 @@ describe("Reviews API", () => {
             dbExists.mockImplementation(async () => Promise.resolve(false));
             dbSave.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).post("/api/v1/reviews/books").send(bookReview).then((response) => {
+            return request(app).post("/api/v1/reviews/books").send({"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(201);
                 expect(dbSave).toBeCalled();
             });
@@ -85,7 +84,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection", () => {
             dbSave.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).post("/api/v1/reviews/books").send(bookReview).then((response) => {
+            return request(app).post("/api/v1/reviews/books").send({"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbSave).toBeCalled();
             });
@@ -94,7 +93,6 @@ describe("Reviews API", () => {
 
 
     describe("POST /reviews/sellers", () => {
-        const sellerReview = new BookReview({"sellerId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5});
         var dbSave;
         var dbExists;
 
@@ -107,7 +105,7 @@ describe("Reviews API", () => {
             dbExists.mockImplementation(async () => Promise.resolve(false));
             dbSave.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).post("/api/v1/reviews/sellers").send(sellerReview).then((response) => {
+            return request(app).post("/api/v1/reviews/sellers").send({"sellerId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(201);
                 expect(dbSave).toBeCalled();
             });
@@ -116,7 +114,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection", () => {
             dbSave.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).post("/api/v1/reviews/sellers").send(sellerReview).then((response) => {
+            return request(app).post("/api/v1/reviews/sellers").send({"sellerId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbSave).toBeCalled();
             });
@@ -135,7 +133,7 @@ describe("Reviews API", () => {
         it("Should update a book review if everything is fine", () => {
             dbFindByIdAndUpdate.mockImplementation(async () => Promise.resolve(bookReview));
 
-            return request(app).put("/api/v1/reviews/books/1").send(bookReview).then((response) => {
+            return request(app).put("/api/v1/reviews/books/1").send({"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(dbFindByIdAndUpdate).toBeCalled();
             });
@@ -144,7 +142,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection", () => {
             dbFindByIdAndUpdate.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).put("/api/v1/reviews/books/1").send(bookReview).then((response) => {
+            return request(app).put("/api/v1/reviews/books/1").send({"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbFindByIdAndUpdate).toBeCalled();
             });
@@ -152,7 +150,7 @@ describe("Reviews API", () => {
     });
 
     describe("PUT /reviews/sellers/:id", () => {
-        const sellerReview = new SellerReview({"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5});
+        const sellerReview = new SellerReview({"sellerId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5});
         var dbFindByIdAndUpdate;
 
         beforeEach(() => {
@@ -162,7 +160,7 @@ describe("Reviews API", () => {
         it("Should update a book review if everything is fine", () => {
             dbFindByIdAndUpdate.mockImplementation(async () => Promise.resolve(sellerReview));
 
-            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReview).then((response) => {
+            return request(app).put("/api/v1/reviews/sellers/1").send({"sellerId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(dbFindByIdAndUpdate).toBeCalled();
             });
@@ -171,7 +169,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection", () => {
             dbFindByIdAndUpdate.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReview).then((response) => {
+            return request(app).put("/api/v1/reviews/sellers/1").send({"sellerId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbFindByIdAndUpdate).toBeCalled();
             });

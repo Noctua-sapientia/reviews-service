@@ -42,15 +42,12 @@ function validateSkip(value) {
 }
 
 function validateRating(rating) {
-  if (rating !== undefined) {
     const number = parseInt(rating, 10);
     if (!isNaN(number) && number >= 1 && number <= 5) {
       return number;
     } else {
       throw new Error("Rating must be a number between 1 and 5.");
     }
-  }
-  return null;
 }
   
 module.exports = {

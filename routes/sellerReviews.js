@@ -83,8 +83,14 @@ router.post('/', async function(req, res, next) {
   const {sellerId, customerId, description, rating} = req.body;
 
   try {
-    if (!await SellerReview.exists({ sellerId: sellerId, customerId: customerId })) {
+    validateRating(rating);
+  } catch (error) {
+    return res.status(400).send(error.message);
+  }
+  
+  try {
 
+    if (!await SellerReview.exists({ sellerId: sellerId, customerId: customerId })) {
       const sellerReview = new SellerReview({
         sellerId,
         customerId,

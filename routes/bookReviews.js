@@ -100,6 +100,13 @@ Create a new review for a book
 
 router.post('/', async function(req, res, next) {
   const {bookId, customerId, description, rating} = req.body;
+
+  try {
+    validateRating(rating);
+  } catch (error) {
+    return res.status(400).send(error.message);
+  }
+  
   try {
     if (!await BookReview.exists({ bookId: bookId, customerId: customerId })) {
       const bookReview = new BookReview({
