@@ -176,7 +176,7 @@ router.delete('/:id', async function(req, res, next) {
 /* DELETE reviews by bookId
 Delete all book reviews of a book
 */
-router.delete('/:bookId?', async function(req, res, next) {
+router.delete('/', async function(req, res, next) {
   var bookId = req.query.bookId;
   if(bookId !=null) {
     try {
@@ -188,7 +188,7 @@ router.delete('/:bookId?', async function(req, res, next) {
       }
     
   }else{
-    res.status(401).send('You can not delete all book reviews');
+    res.status(401).send('You must indicate a bookId');
   }  
 });
 
