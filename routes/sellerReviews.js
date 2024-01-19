@@ -29,7 +29,7 @@ router.get('/', async function(req, res, next) {
     if ( !validateLimit(req.query.limit) ) { return res.status(400).send("Limit must be a number greater than 0.") }
     let limit = req.query.limit === undefined ? null : req.query.limit;
 
-    if ( !validateLimit(req.query.skip) ) { return res.status(400).send("Skip must be a non-negative number") }
+    if ( !validateSkip(req.query.skip) ) { return res.status(400).send("Skip must be a non-negative number") }
     let skip = req.query.skip === undefined ? null : req.query.skip;
     
     const result = await SellerReview.find(filters).sort([[sortat, order]]).limit(limit).skip(skip);
