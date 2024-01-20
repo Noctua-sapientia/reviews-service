@@ -3,7 +3,7 @@ var router = express.Router();
 var BookReview = require('../models/bookReview');
 var debug = require('debug')('bookReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
-const { existsBook, updateRating } = require("../services/books");
+const { existsBook, updateRatingBook } = require("../services/books");
 
 /*var book_reviews = [
   {"id": 1, "bookId": 2, "customerId": 3, "description": "El libro es genial, lo recomiendo",
@@ -141,7 +141,7 @@ router.post('/', async function(req, res, next) {
       // ]);
       // mean_rating = mean_rating[0].averageRating;
       
-      // await updateRating(bookId, mean_rating);
+      // await updateRatingBook(bookId, mean_rating);
 
       res.status(201).json(bookReview.cleanup());
 

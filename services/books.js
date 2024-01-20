@@ -20,12 +20,12 @@ const existsBook = async function(isbn) {
     }
 }
 
-const updateRating = async function(isbn, rating) {
+const updateRatingBook = async function(isbn, rating) {
 
     try {
         const url = urlJoin(BOOK_SERVICE, API_VERSION,'/books/', isbn.toString());
 
-        let bookData = await axios.get(url, data);
+        let bookData = await axios.get(url);
         bookData.reviews = rating;
 
         const response = await axios.put(url, bookData);
@@ -39,5 +39,5 @@ const updateRating = async function(isbn, rating) {
 
 module.exports = { 
     existsBook,
-    updateRating
+    updateRatingBook
 }

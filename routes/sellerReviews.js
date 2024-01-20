@@ -5,6 +5,7 @@ var SellerReview = require('../models/sellerReview');
 var debug = require('debug')('sellerReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
 const { existsOrder } = require('../services/orders');
+const { updateRatingSeller } = require("../services/users");
 
 /* GET reviews of sellers listing. */
 router.get('/', async function(req, res, next) {
@@ -111,6 +112,22 @@ router.post('/', async function(req, res, next) {
       })
       
       await sellerReview.save();
+
+      // let mean_rating = await SellerReview.aggregate([
+      //   {
+      //       $match: { "sellerId": sellerId } // Filtra para obtener solo las reseñas del libro específico
+      //   },
+      //   {
+      //       $group: {
+      //           _id: null, // Agrupa todos los documentos filtrados
+      //           averageRating: { $avg: "$rating" } // Calcula el promedio de la calificación
+      //       }
+      //   }
+      // ]);
+      // mean_rating = mean_rating[0].averageRating;
+      
+      // await updateRatingSeller(sellerId, mean_rating);
+
       res.status(201).json(sellerReview.cleanup());
     } else {
       res.status(409).json({ error: `There is already a review with sellerId=${sellerId} and customerId=${customerId}.` });
@@ -121,6 +138,7 @@ router.post('/', async function(req, res, next) {
       res.status(400).send({error: e.message});
     } else {
       debug('DB  problem', e);
+      console.log(e);
       res.sendStatus(500);
     }
   }
