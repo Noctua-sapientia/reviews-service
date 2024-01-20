@@ -4,6 +4,7 @@ var router = express.Router();
 var SellerReview = require('../models/sellerReview');
 var debug = require('debug')('sellerReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
+const { existsOrder } = require('../services/orders');
 
 /* GET reviews of sellers listing. */
 router.get('/', async function(req, res, next) {
@@ -92,6 +93,10 @@ router.get('/:id', async function(req, res, next) {
 router.post('/', async function(req, res, next) {
 
   const {sellerId, customerId, description, rating} = req.body;
+
+  // const resExistsOrder = await existsOrder(sellerId, customerId);
+  // if (resExistsOrder === null) { return res.status(502).send("There is a problem in orders microservice"); }
+  // if ( !resExistsOrder ) { return res.status(400).send("The user have not done any order to that seller, so he must not rate him"); }
 
   if ( !validateRating(rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
 

@@ -111,9 +111,9 @@ Create a new review for a book
 router.post('/', async function(req, res, next) {
   const {bookId, customerId, description, rating} = req.body;
 
-  // const exists = await existsBook(bookId);
-  // if (exists === null) { return res.status(502).send("There is a problem in book microservice"); }
-  // if ( !exists ) { return res.status(400).send("There is not exist that book"); }
+  // const resExistsBook = await existsBook(bookId);
+  // if (resExistsBook === null) { return res.status(502).send("There is a problem in book microservice"); }
+  // if ( !resExistsBook ) { return res.status(400).send("There is not exist that book"); }
 
   if ( !validateRating(rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
   
