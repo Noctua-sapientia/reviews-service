@@ -3,6 +3,7 @@ var router = express.Router();
 var BookReview = require('../models/bookReview');
 var debug = require('debug')('bookReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateSkip, validateRating } = require('./validator');
+const { existsBook, updateRating } = require("../services/books");
 
 /*var book_reviews = [
   {"id": 1, "bookId": 2, "customerId": 3, "description": "El libro es genial, lo recomiendo",
@@ -88,6 +89,10 @@ Create a new review for a book
 router.post('/', async function(req, res, next) {
   const {bookId, customerId, description, rating} = req.body;
 
+  // const exists = await existsBook(bookId);
+  // if (exists === null) { return res.status(502).send("There is a problem in book microservice"); }
+  // if ( !exists ) { return res.status(400).send("There is not exist that book"); }
+
   if ( !validateRating(rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
   
   try {
@@ -100,7 +105,24 @@ router.post('/', async function(req, res, next) {
       })
       
       await bookReview.save();
+
+      let mean_rating = await BookReview.aggregate([
+        {
+            $match: { "bookId": bookId } // Filtra para obtener solo las reseñas del libro específico
+        },
+        {
+            $group: {
+                _id: null, // Agrupa todos los documentos filtrados
+                averageRating: { $avg: "$rating" } // Calcula el promedio de la calificación
+            }
+        }
+      ]);
+      mean_rating = mean_rating[0].averageRating;
+      
+      await updateRating(bookId, mean_rating);
+
       res.status(201).json(bookReview.cleanup());
+
     } else {
       res.status(409).json({ error: `There is already a review with bookId=${bookId} and customerId=${customerId}.` });
 
