@@ -51,7 +51,7 @@ router.get('/', async function(req, res, next) {
     if (req.query.sort) {
       sortat = req.query.sort === 'date' ? 'createdAt' : 'rating';
     } else {
-      sortat = null;
+      sortat = 'createdAt';
     }
 
     
