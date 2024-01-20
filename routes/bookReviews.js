@@ -82,7 +82,7 @@ router.get('/', async function(req, res, next) {
 
     let filters = {};
 
-    if (req.query.sellerId !== undefined) { filters["bookId"] = req.query.bookId; }
+    if (req.query.bookId !== undefined) { filters["bookId"] = req.query.bookId; }
 
     if (req.query.customerId !== undefined) { filters["customerId"] = req.query.customerId; }
 
