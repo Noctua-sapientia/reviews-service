@@ -8,8 +8,8 @@ const API_VERSION = '/api/v1';
 const existsBook = async function(isbn) {
     try {
         const url = urlJoin(BOOK_SERVICE, API_VERSION,'/books/', isbn.toString());
-        const response = await axios.get(url);
-        return length(response) > 0;
+        await axios.get(url);
+        return true;
     } catch (e) {
         if (e.response.status === 404) {
             return false;
