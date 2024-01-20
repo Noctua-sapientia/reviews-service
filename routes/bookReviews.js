@@ -14,6 +14,28 @@ const { existsBook, updateRating } = require("../services/books");
 "rating": 4, "creationDate": "28/02/2022", "updatedDate": "28/02/2022"}
 ]*/
 
+/*GET num reviews
+*/
+router.get('/count', async function(req, res, next) {
+  var bookId = req.query.bookId;
+
+  filter = {};
+  if ( bookId ) { filter["bookId"] = bookId}
+
+  try {
+    const result = await BookReview.countDocuments(filter);
+    if (result) {
+      res.status(200).send({count: result});
+    } else {
+      res.status(200).send({count: 0});
+    }
+  } catch(e) {
+    debug('DB  problem', e);
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
 
 /*GET review by id
 Return the review that has that id

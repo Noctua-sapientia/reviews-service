@@ -46,6 +46,28 @@ router.get('/', async function(req, res, next) {
   }
 });
 
+/*GET num reviews
+*/
+router.get('/count', async function(req, res, next) {
+  var sellerId = req.query.sellerId;
+
+  filter = {};
+  if ( sellerId ) { filter["sellerId"] = sellerId}
+
+  try {
+    const result = await SellerReview.countDocuments(filter);
+    if (result) {
+      res.status(200).send({count: result});
+    } else {
+      res.status(200).send({count: 0});
+    }
+  } catch(e) {
+    debug('DB  problem', e);
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
+
 
 /* GET /reviews/sellers/{id} */
 router.get('/:id', async function(req, res, next) {
