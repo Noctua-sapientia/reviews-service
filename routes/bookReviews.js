@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var BookReview = require('../models/bookReview');
 var debug = require('debug')('bookReviews-2:server');
-const { validateOrderField, validateSortField, validateLimit, validateSkip, validateRating } = require('./validator');
+const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
 const { existsBook, updateRating } = require("../services/books");
 
 /*var book_reviews = [
@@ -40,7 +40,7 @@ router.get('/:id', async function(req, res, next) {
 Filters can be, field to order (rating or date), type of order (asc,desc),
 bookId if you need only the reviews of book, customerId if you want the book
 reviews of a specific client
-limit is to put a max number of reviews to get and skip is to indicate the initial 
+limit is to put a max number of reviews to get and offset is to indicate the initial 
 reviewId to find*/ 
 
 router.get('/', async function(req, res, next) {
@@ -67,10 +67,10 @@ router.get('/', async function(req, res, next) {
     if ( !validateLimit(req.query.limit) ) { return res.status(400).send("Limit must be a number greater than 0.") }
     let limit = req.query.limit === undefined ? null : req.query.limit;
 
-    if ( !validateSkip(req.query.skip) ) { return res.status(400).send("Skip must be a non-negative number") }
-    let skip = req.query.skip === undefined ? null : req.query.skip;
+    if ( !validateOffset(req.query.offset) ) { return res.status(400).send("Offset must be a non-negative number") }
+    let offset = req.query.offset === undefined ? null : req.query.offset;
     
-    const result = await BookReview.find(filters).sort([[sortat, order]]).limit(limit).skip(skip);
+    const result = await BookReview.find(filters).sort([[sortat, order]]).limit(limit).skip(offset);
     if (result.length > 0) {
       res.status(200).send(result.map((r) => r.cleanup()));
     } else {
@@ -106,20 +106,20 @@ router.post('/', async function(req, res, next) {
       
       await bookReview.save();
 
-      let mean_rating = await BookReview.aggregate([
-        {
-            $match: { "bookId": bookId } // Filtra para obtener solo las reseñas del libro específico
-        },
-        {
-            $group: {
-                _id: null, // Agrupa todos los documentos filtrados
-                averageRating: { $avg: "$rating" } // Calcula el promedio de la calificación
-            }
-        }
-      ]);
-      mean_rating = mean_rating[0].averageRating;
+      // let mean_rating = await BookReview.aggregate([
+      //   {
+      //       $match: { "bookId": bookId } // Filtra para obtener solo las reseñas del libro específico
+      //   },
+      //   {
+      //       $group: {
+      //           _id: null, // Agrupa todos los documentos filtrados
+      //           averageRating: { $avg: "$rating" } // Calcula el promedio de la calificación
+      //       }
+      //   }
+      // ]);
+      // mean_rating = mean_rating[0].averageRating;
       
-      await updateRating(bookId, mean_rating);
+      // await updateRating(bookId, mean_rating);
 
       res.status(201).json(bookReview.cleanup());
 

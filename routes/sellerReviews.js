@@ -3,7 +3,7 @@ var express = require('express');
 var router = express.Router();
 var SellerReview = require('../models/sellerReview');
 var debug = require('debug')('sellerReviews-2:server');
-const { validateOrderField, validateSortField, validateLimit, validateSkip, validateRating } = require('./validator');
+const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
 
 /* GET reviews of sellers listing. */
 router.get('/', async function(req, res, next) {
@@ -30,14 +30,14 @@ router.get('/', async function(req, res, next) {
     if ( !validateLimit(req.query.limit) ) { return res.status(400).send("Limit must be a number greater than 0.") }
     let limit = req.query.limit === undefined ? null : req.query.limit;
 
-    if ( !validateSkip(req.query.skip) ) { return res.status(400).send("Skip must be a non-negative number") }
-    let skip = req.query.skip === undefined ? null : req.query.skip;
+    if ( !validateOffset(req.query.offset) ) { return res.status(400).send("Offset must be a non-negative number") }
+    let offset = req.query.offset === undefined ? null : req.query.offset;
     
-    const result = await SellerReview.find(filters).sort([[sortat, order]]).limit(limit).skip(skip);
+    const result = await SellerReview.find(filters).sort([[sortat, order]]).limit(limit).skip(offset);
     if (result.length > 0) {
       res.status(200).send(result.map((r) => r.cleanup()));
     } else {
-      res.status(404).send({error: `Review not found.`});
+      res.status(404).send({error: `Review not found.`}); 
     }
   } catch(e) {
     debug('DB  problem', e);

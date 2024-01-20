@@ -18,8 +18,8 @@ function validateLimit(limit) {
     return (limit === undefined) || (!isNaN(limit) && limit > 0);
 }
 
-function validateSkip(skip) {
-  return (skip === undefined) || (!isNaN(skip) && skip >= 0);
+function validateOffset(offset) {
+  return (offset === undefined) || (!isNaN(offset) && offset >= 0);
 }
 
 function validateRating(rating) {
@@ -35,7 +35,7 @@ module.exports = {
     validateOrderField,
     validateSortField,
     validateLimit,
-    validateSkip,
+    validateOffset,
     validateRating
 };
   
