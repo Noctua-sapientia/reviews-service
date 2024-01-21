@@ -6,10 +6,13 @@ var debug = require('debug')('sellerReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
 const Order = require('../services/orders');
 const User = require("../services/users");
+const cors = require('cors');
+const validateJWT = require("../middlewares/validateJWT");
 
+router.use(cors());
 
 /* GET reviews of sellers listing. */
-router.get('/', async function(req, res, next) {
+router.get('/', validateJWT, async function(req, res, next) {
   try {
 
     if ( !validateSortField(req.query.sort) ) { return res.status(400).send("Invalid sort field. It must be 'rating' or 'date'."); }
@@ -51,7 +54,7 @@ router.get('/', async function(req, res, next) {
 
 /*GET num reviews
 */
-router.get('/count', async function(req, res, next) {
+router.get('/count', validateJWT, async function(req, res, next) {
   var sellerId = req.query.sellerId;
   var customerId = req.query.customerId;
 
@@ -77,7 +80,7 @@ router.get('/count', async function(req, res, next) {
 
 
 /* GET /reviews/sellers/{id} */
-router.get('/:id', async function(req, res, next) {
+router.get('/:id', validateJWT, async function(req, res, next) {
   var reviewId = req.params.id;
 
   try {
@@ -96,7 +99,7 @@ router.get('/:id', async function(req, res, next) {
 
 
 /* POST sellerReview */
-router.post('/', async function(req, res, next) {
+router.post('/', validateJWT, async function(req, res, next) {
 
   const {sellerId, customerId, description, rating} = req.body;
 
@@ -152,7 +155,7 @@ router.post('/', async function(req, res, next) {
 
 
 /* PUT sellerReview */
-router.put('/:id', async function(req, res, next) {
+router.put('/:id', validateJWT, async function(req, res, next) {
 
   var reviewId = req.params.id;
   var reviewData = req.body;
@@ -199,7 +202,7 @@ router.put('/:id', async function(req, res, next) {
 
 
 /* DELETE a sellerReviews by id*/
-router.delete('/:id', async function(req, res, next) {
+router.delete('/:id', validateJWT, async function(req, res, next) {
   var reviewId = req.params.id;
 
   try {
@@ -212,7 +215,7 @@ router.delete('/:id', async function(req, res, next) {
 });
 
 /* DELETE all sellerReviews from one seller by sellerId*/
-router.delete('/', async function(req, res, next) {
+router.delete('/', validateJWT, async function(req, res, next) {
   var sellerId = req.query.sellerId;
   if (sellerId != null) {
     try {

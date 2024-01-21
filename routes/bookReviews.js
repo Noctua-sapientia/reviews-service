@@ -5,6 +5,10 @@ var debug = require('debug')('bookReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
 const Book = require("../services/books");
 
+const cors = require('cors');
+const validateJWT = require("../middlewares/validateJWT");
+
+router.use(cors());
 
 /*var book_reviews = [
   {"id": 1, "bookId": 2, "customerId": 3, "description": "El libro es genial, lo recomiendo",
@@ -17,7 +21,7 @@ const Book = require("../services/books");
 
 /*GET num reviews
 */
-router.get('/count', async function(req, res, next) {
+router.get('/count', validateJWT, async function(req, res, next) {
   var bookId = req.query.bookId;
   var customerId = req.query.customerId;
 
@@ -44,7 +48,7 @@ router.get('/count', async function(req, res, next) {
 /*GET review by id
 Return the review that has that id
 */
-router.get('/:id', async function(req, res, next) {
+router.get('/:id', validateJWT, async function(req, res, next) {
   var reviewId = req.params.id;
 
   try {
@@ -69,7 +73,7 @@ reviews of a specific client
 limit is to put a max number of reviews to get and offset is to indicate the initial 
 reviewId to find*/ 
 
-router.get('/', async function(req, res, next) {
+router.get('/', validateJWT, async function(req, res, next) {
   try {
 
     if ( !validateSortField(req.query.sort) ) { return res.status(400).send("Invalid sort field. It must be 'rating' or 'date'."); }
@@ -112,7 +116,7 @@ router.get('/', async function(req, res, next) {
 Create a new review for a book
 */
 
-router.post('/', async function(req, res, next) {
+router.post('/', validateJWT, async function(req, res, next) {
   const {bookId, customerId, description, rating} = req.body;
 
   const resExistsBook = await Book.existsBook(bookId);
@@ -165,7 +169,7 @@ router.post('/', async function(req, res, next) {
 });
 
 /*PUT update book review information such as description and rating only those fields*/
-router.put('/:id', async function(req, res, next) {
+router.put('/:id', validateJWT, async function(req, res, next) {
 
   var reviewId = req.params.id;
   var reviewData = req.body;
@@ -211,7 +215,7 @@ router.put('/:id', async function(req, res, next) {
 });
 
 /* DELETE a bookReview by id*/
-router.delete('/:id', async function(req, res, next) {
+router.delete('/:id', validateJWT, async function(req, res, next) {
   var reviewId = req.params.id;
   try {
     await BookReview.deleteOne({_id: reviewId});
@@ -225,7 +229,7 @@ router.delete('/:id', async function(req, res, next) {
 /* DELETE reviews by bookId
 Delete all book reviews of a book
 */
-router.delete('/', async function(req, res, next) {
+router.delete('/', validateJWT, async function(req, res, next) {
   var bookId = req.query.bookId;
   if(bookId !=null) {
     try {
