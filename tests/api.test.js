@@ -1,5 +1,6 @@
 const app = require('../app');
 const request = require("supertest");
+const jwt = require('jsonwebtoken');
 const BookReview = require('../models/bookReview');
 const SellerReview = require('../models/sellerReview');
 const Book = require('../services/books');
@@ -18,6 +19,8 @@ describe("Reviews API", () => {
 
     let numReviews;
 
+    let jwtToken;
+
     beforeAll(() => {
         bookReviews = [
             new BookReview({"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}),
@@ -34,6 +37,10 @@ describe("Reviews API", () => {
         sellerReviewJSON = {"sellerId": 1, "customerId": 1, "description": "Muy rápido", "rating": 5};
         
         numReviews = 3;
+
+        const SECRET_KEY = 'a56d1f7c0c817387a072692731ea60df7c3a6c19d82ddac228a9a4461f8c5a72';
+
+        jwtToken = jwt.sign({}, SECRET_KEY,);
     });
 
     describe("GET /", () => {
@@ -54,7 +61,7 @@ describe("Reviews API", () => {
                 skip: jest.fn().mockImplementation(() => Promise.resolve(bookReviews)),
             };
             dbFind = jest.spyOn(BookReview, 'find').mockImplementation(() => mockFindChain);
-            return request(app).get("/api/v1/reviews/books").then((response) => {
+            return request(app).get("/api/v1/reviews/books").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(response.body).toBeArrayOfSize(bookReviews.length);
                 expect(response.body[0].id).toBe(bookReviews[0].id);
@@ -73,7 +80,7 @@ describe("Reviews API", () => {
                 skip: jest.fn().mockImplementation(() => Promise.resolve([bookReview])),
             };
             dbFind = jest.spyOn(BookReview, 'find').mockImplementation(() => mockFindChain);
-            return request(app).get("/api/v1/reviews/books?bookId=1").then((response) => {
+            return request(app).get("/api/v1/reviews/books?bookId=1").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(response.body).toBeArrayOfSize(1);
                 expect(response.body[0].id).toBe(bookReview.id);
@@ -92,7 +99,7 @@ describe("Reviews API", () => {
                 skip: jest.fn().mockImplementation(() => Promise.resolve([])),
             };
             dbFind = jest.spyOn(BookReview, 'find').mockImplementation(() => mockFindChain);
-            return request(app).get("/api/v1/reviews/books?bookId=1").then((response) => {
+            return request(app).get("/api/v1/reviews/books?bookId=1").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(404);
                 expect(dbFind).toBeCalled();
             });
@@ -105,32 +112,32 @@ describe("Reviews API", () => {
                 skip: jest.fn().mockImplementation(() => Promise.resolve([])),
             };
             dbFind = jest.spyOn(BookReview, 'find').mockImplementation(() => mockFindChain);
-            return request(app).get("/api/v1/reviews/books?customerId=1").then((response) => {
+            return request(app).get("/api/v1/reviews/books?customerId=1").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(404);
                 expect(dbFind).toBeCalled();
             });
         });
 
         it("Should return 400 if sort value is not rating or date", () => {
-            return request(app).get("/api/v1/reviews/books?sort=name").then((response) => {
+            return request(app).get("/api/v1/reviews/books?sort=name").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
             });
         });
 
         it("Should return 400 if order value is not asc or desc", () => {
-            return request(app).get("/api/v1/reviews/books?order=random").then((response) => {
+            return request(app).get("/api/v1/reviews/books?order=random").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
             });
         });
 
         it("Should return 400 if limit value is not greater than 0", () => {
-            return request(app).get("/api/v1/reviews/books?limit=0").then((response) => {
+            return request(app).get("/api/v1/reviews/books?limit=0").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
             });
         });
 
         it("Should return 400 if offset value is negative", () => {
-            return request(app).get("/api/v1/reviews/books?offset=-1").then((response) => {
+            return request(app).get("/api/v1/reviews/books?offset=-1").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
             });
         });
@@ -142,7 +149,7 @@ describe("Reviews API", () => {
                 skip: jest.fn().mockImplementation(() => Promise.resolve(bookReviews)),
             };
             dbFind = jest.spyOn(BookReview, 'find').mockImplementation(() => mockFindChain);
-            return request(app).get("/api/v1/reviews/books?bookId=1&limit=2&offset=3&sort=date&order=desc").then((response) => {
+            return request(app).get("/api/v1/reviews/books?bookId=1&limit=2&offset=3&sort=date&order=desc").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(response.body).toBeArrayOfSize(bookReviews.length);
                 expect(response.body[0].id).toBe(bookReviews[0].id);
@@ -167,7 +174,7 @@ describe("Reviews API", () => {
 
             dbFind = jest.spyOn(SellerReview, 'find').mockImplementation(() => mockFindChain);
 
-            return request(app).get("/api/v1/reviews/sellers").then((response) => {
+            return request(app).get("/api/v1/reviews/sellers").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(response.body).toBeArrayOfSize(sellerReviews.length);
                 expect(response.body[0].id).toBe(sellerReviews[0].id);
@@ -186,7 +193,7 @@ describe("Reviews API", () => {
                 skip: jest.fn().mockImplementation(() => Promise.resolve([sellerReview])),
             };
             dbFind = jest.spyOn(SellerReview, 'find').mockImplementation(() => mockFindChain);
-            return request(app).get("/api/v1/reviews/sellers?sellerId=1").then((response) => {
+            return request(app).get("/api/v1/reviews/sellers?sellerId=1").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(response.body).toBeArrayOfSize(1);
                 expect(response.body[0].id).toBe(sellerReview.id);
@@ -205,7 +212,7 @@ describe("Reviews API", () => {
                 skip: jest.fn().mockImplementation(() => Promise.resolve([])),
             };
             dbFind = jest.spyOn(SellerReview, 'find').mockImplementation(() => mockFindChain);
-            return request(app).get("/api/v1/reviews/sellers?sellerId=1").then((response) => {
+            return request(app).get("/api/v1/reviews/sellers?sellerId=1").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(404);
                 expect(dbFind).toBeCalled();
             });
@@ -218,32 +225,32 @@ describe("Reviews API", () => {
                 skip: jest.fn().mockImplementation(() => Promise.resolve([])),
             };
             dbFind = jest.spyOn(SellerReview, 'find').mockImplementation(() => mockFindChain);
-            return request(app).get("/api/v1/reviews/sellers?customerId=1").then((response) => {
+            return request(app).get("/api/v1/reviews/sellers?customerId=1").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(404);
                 expect(dbFind).toBeCalled();
             });
         });
 
         it("Should return 400 if sort value is not rating or date", () => {
-            return request(app).get("/api/v1/reviews/sellers?sort=name").then((response) => {
+            return request(app).get("/api/v1/reviews/sellers?sort=name").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
             });
         });
 
         it("Should return 400 if order value is not asc or desc", () => {
-            return request(app).get("/api/v1/reviews/sellers?order=random").then((response) => {
+            return request(app).get("/api/v1/reviews/sellers?order=random").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
             });
         });
 
         it("Should return 400 if limit value is not greater than 0", () => {
-            return request(app).get("/api/v1/reviews/sellers?limit=0").then((response) => {
+            return request(app).get("/api/v1/reviews/sellers?limit=0").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
             });
         });
 
         it("Should return 400 if offset value is negative", () => {
-            return request(app).get("/api/v1/reviews/sellers?offset=-1").then((response) => {
+            return request(app).get("/api/v1/reviews/sellers?offset=-1").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
             });
         });
@@ -255,7 +262,7 @@ describe("Reviews API", () => {
                 skip: jest.fn().mockImplementation(() => Promise.resolve(sellerReviews)),
             };
             dbFind = jest.spyOn(SellerReview, 'find').mockImplementation(() => mockFindChain);
-            return request(app).get("/api/v1/reviews/sellers?sellerId=1&limit=2&offset=3&sort=date&order=desc").then((response) => {
+            return request(app).get("/api/v1/reviews/sellers?sellerId=1&limit=2&offset=3&sort=date&order=desc").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(response.body).toBeArrayOfSize(sellerReviews.length);
                 expect(response.body[0].id).toBe(sellerReviews[0].id);
@@ -274,7 +281,7 @@ describe("Reviews API", () => {
             dbCount = jest.spyOn(BookReview, 'countDocuments');
             dbCount.mockImplementation(() => Promise.resolve(numReviews));
 
-            return request(app).get("/api/v1/reviews/books/count").then((response) => {
+            return request(app).get("/api/v1/reviews/books/count").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(response.body.count).toBe(numReviews);
                 expect(dbCount).toBeCalled();
@@ -284,7 +291,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection", () => {
             dbCount.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).get("/api/v1/reviews/books/count").then((response) => {
+            return request(app).get("/api/v1/reviews/books/count").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbCount).toBeCalled();
             });
@@ -297,7 +304,7 @@ describe("Reviews API", () => {
             dbCount = jest.spyOn(SellerReview, 'countDocuments');
             dbCount.mockImplementation(() => Promise.resolve(numReviews));
 
-            return request(app).get("/api/v1/reviews/sellers/count").then((response) => {
+            return request(app).get("/api/v1/reviews/sellers/count").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(response.body.count).toBe(numReviews);
                 expect(dbCount).toBeCalled();
@@ -307,7 +314,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection", () => {
             dbCount.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).get("/api/v1/reviews/books/count").then((response) => {
+            return request(app).get("/api/v1/reviews/books/count").set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbCount).toBeCalled();
             });
@@ -333,7 +340,7 @@ describe("Reviews API", () => {
             dbAggregate.mockImplementation(async () => Promise.resolve([{ _id: null, averageRating: 4.2 }]));
             updateRatingBook.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).post("/api/v1/reviews/books").send(bookReviewJSON).then((response) => {
+            return request(app).post("/api/v1/reviews/books").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(201);
                 expect(dbExists).toBeCalled();
                 expect(dbSave).toBeCalled();
@@ -351,7 +358,7 @@ describe("Reviews API", () => {
         it("Should return 400 if a book does not exist", () => {
             existsBook.mockImplementation(async () => Promise.resolve(false));
 
-            return request(app).post("/api/v1/reviews/books").send(bookReviewJSON).then((response) => {
+            return request(app).post("/api/v1/reviews/books").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
                 expect(existsBook).toBeCalled();
             });
@@ -360,7 +367,7 @@ describe("Reviews API", () => {
         it("Should return 502 if there is a problem with book service when checking if book exists", () => {
             existsBook.mockImplementation(async () => Promise.resolve(null));
 
-            return request(app).post("/api/v1/reviews/books").send(bookReviewJSON).then((response) => {
+            return request(app).post("/api/v1/reviews/books").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(502);
                 expect(existsBook).toBeCalled();
             });
@@ -371,7 +378,7 @@ describe("Reviews API", () => {
 
             let bookReviewJSONRatePos = {"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 7};
 
-            return request(app).post("/api/v1/reviews/books").send(bookReviewJSONRatePos).then((response) => {
+            return request(app).post("/api/v1/reviews/books").send(bookReviewJSONRatePos).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
                 expect(existsBook).toBeCalled();
             });
@@ -382,7 +389,7 @@ describe("Reviews API", () => {
 
             let bookReviewJSONRateNeg = {"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 0};
 
-            return request(app).post("/api/v1/reviews/books").send(bookReviewJSONRateNeg).then((response) => {
+            return request(app).post("/api/v1/reviews/books").send(bookReviewJSONRateNeg).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
                 expect(existsBook).toBeCalled();
             });
@@ -392,7 +399,7 @@ describe("Reviews API", () => {
             existsBook.mockImplementation(async () => Promise.resolve(true));
             dbExists.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).post("/api/v1/reviews/books").send(bookReviewJSON).then((response) => {
+            return request(app).post("/api/v1/reviews/books").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(409);
                 expect(existsBook).toBeCalled();
                 expect(dbExists).toBeCalled();
@@ -404,7 +411,7 @@ describe("Reviews API", () => {
             dbExists.mockImplementation(async () => Promise.resolve(false));
             dbSave.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).post("/api/v1/reviews/books").send(bookReviewJSON).then((response) => {
+            return request(app).post("/api/v1/reviews/books").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbSave).toBeCalled();
                 expect(existsBook).toBeCalled();
@@ -433,7 +440,7 @@ describe("Reviews API", () => {
             dbAggregate.mockImplementation(async () => Promise.resolve([{ _id: null, averageRating: 4.2 }]));
             updateRatingSeller.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).post("/api/v1/reviews/sellers").send(sellerReviewJSON).then((response) => {
+            return request(app).post("/api/v1/reviews/sellers").send(sellerReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(201);
                 expect(dbSave).toBeCalled();
                 expect(existsOrderBetweenCustomerSeller).toBeCalled();
@@ -450,7 +457,7 @@ describe("Reviews API", () => {
         it("Should return 400 if the customer has not make any order to the seller", () => {
             existsOrderBetweenCustomerSeller.mockImplementation(async () => Promise.resolve(false));
 
-            return request(app).post("/api/v1/reviews/sellers").send(bookReviewJSON).then((response) => {
+            return request(app).post("/api/v1/reviews/sellers").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
                 expect(existsOrderBetweenCustomerSeller).toBeCalled();
             });
@@ -459,7 +466,7 @@ describe("Reviews API", () => {
         it("Should return 502 if there is a problem with user service when checking if an order exists", () => {
             existsOrderBetweenCustomerSeller.mockImplementation(async () => Promise.resolve(null));
 
-            return request(app).post("/api/v1/reviews/sellers").send(sellerReviewJSON).then((response) => {
+            return request(app).post("/api/v1/reviews/sellers").send(sellerReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(502);
                 expect(existsOrderBetweenCustomerSeller).toBeCalled();
             });
@@ -470,7 +477,7 @@ describe("Reviews API", () => {
 
             let sellerReviewJSONRatePos = {"sellerId": 1, "customerId": 1, "description": "Muy chulo", "rating": 7};
 
-            return request(app).post("/api/v1/reviews/sellers").send(sellerReviewJSONRatePos).then((response) => {
+            return request(app).post("/api/v1/reviews/sellers").send(sellerReviewJSONRatePos).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
                 expect(existsOrderBetweenCustomerSeller).toBeCalled();
             });
@@ -481,7 +488,7 @@ describe("Reviews API", () => {
 
             let sellerReviewJSONRateNeg = {"sellerId": 1, "customerId": 1, "description": "Muy chulo", "rating": 0};
 
-            return request(app).post("/api/v1/reviews/sellers").send(sellerReviewJSONRateNeg).then((response) => {
+            return request(app).post("/api/v1/reviews/sellers").send(sellerReviewJSONRateNeg).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(400);
                 expect(existsOrderBetweenCustomerSeller).toBeCalled();
             });
@@ -491,7 +498,7 @@ describe("Reviews API", () => {
             existsOrderBetweenCustomerSeller.mockImplementation(async () => Promise.resolve(true));
             dbExists.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).post("/api/v1/reviews/sellers").send(bookReviewJSON).then((response) => {
+            return request(app).post("/api/v1/reviews/sellers").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(409);
                 expect(existsOrderBetweenCustomerSeller).toBeCalled();
                 expect(dbExists).toBeCalled();
@@ -503,7 +510,7 @@ describe("Reviews API", () => {
             dbExists.mockImplementation(async () => Promise.resolve(false));
             dbSave.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).post("/api/v1/reviews/sellers").send(sellerReviewJSON).then((response) => {
+            return request(app).post("/api/v1/reviews/sellers").send(sellerReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbSave).toBeCalled();
                 expect(dbExists).toBeCalled();
@@ -532,7 +539,7 @@ describe("Reviews API", () => {
             dbAggregate.mockImplementation(async () => Promise.resolve([{ _id: null, averageRating: 4.2 }]));
             updateRatingBook.mockImplementation(async () => Promise.resolve());
 
-            return request(app).put("/api/v1/reviews/books/1").send(bookReviewJSON).then((response) => {
+            return request(app).put("/api/v1/reviews/books/1").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(dbExists).toBeCalled();
                 expect(dbFindByIdAndUpdate).toBeCalled();
@@ -544,7 +551,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection v1", () => {
             dbExists.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).put("/api/v1/reviews/books/1").send(bookReviewJSON).then((response) => {
+            return request(app).put("/api/v1/reviews/books/1").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbExists).toBeCalled();
             });
@@ -554,7 +561,7 @@ describe("Reviews API", () => {
             dbFindByIdAndUpdate.mockImplementation(async () => Promise.reject("Connection failed"));
             dbExists.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).put("/api/v1/reviews/books/1").send(bookReviewJSON).then((response) => {
+            return request(app).put("/api/v1/reviews/books/1").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbFindByIdAndUpdate).toBeCalled();
                 expect(dbExists).toBeCalled();
@@ -566,7 +573,7 @@ describe("Reviews API", () => {
             dbExists.mockImplementation(async () => Promise.resolve(true));
             dbAggregate.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).put("/api/v1/reviews/books/1").send(bookReviewJSON).then((response) => {
+            return request(app).put("/api/v1/reviews/books/1").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbFindByIdAndUpdate).toBeCalled();
                 expect(dbExists).toBeCalled();
@@ -580,7 +587,7 @@ describe("Reviews API", () => {
             dbAggregate.mockImplementation(async () => Promise.resolve([{ _id: null, averageRating: 4.2 }]));
             updateRatingBook.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).put("/api/v1/reviews/books/1").send(bookReviewJSON).then((response) => {
+            return request(app).put("/api/v1/reviews/books/1").send(bookReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbFindByIdAndUpdate).toBeCalled();
                 expect(dbExists).toBeCalled();
@@ -609,7 +616,7 @@ describe("Reviews API", () => {
             dbAggregate.mockImplementation(async () => Promise.resolve([{ _id: null, averageRating: 4.2 }]));
             updateRatingSeller.mockImplementation(async () => Promise.resolve());
 
-            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).then((response) => {
+            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(dbExists).toBeCalled();
                 expect(dbFindByIdAndUpdate).toBeCalled();
@@ -621,7 +628,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection v1", () => {
             dbExists.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).then((response) => {
+            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbExists).toBeCalled();
             });
@@ -631,7 +638,7 @@ describe("Reviews API", () => {
             dbFindByIdAndUpdate.mockImplementation(async () => Promise.reject("Connection failed"));
             dbExists.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).then((response) => {
+            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbFindByIdAndUpdate).toBeCalled();
                 expect(dbExists).toBeCalled();
@@ -643,7 +650,7 @@ describe("Reviews API", () => {
             dbExists.mockImplementation(async () => Promise.resolve(true));
             dbAggregate.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).then((response) => {
+            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbFindByIdAndUpdate).toBeCalled();
                 expect(dbExists).toBeCalled();
@@ -657,7 +664,7 @@ describe("Reviews API", () => {
             dbAggregate.mockImplementation(async () => Promise.resolve([{ _id: null, averageRating: 4.2 }]));
             updateRatingSeller.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).then((response) => {
+            return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbFindByIdAndUpdate).toBeCalled();
                 expect(dbExists).toBeCalled();
@@ -677,7 +684,7 @@ describe("Reviews API", () => {
         it("Should delete a book review if everything is fine", () => {
             dbDeleteOne.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).delete("/api/v1/reviews/books/1").send().then((response) => {
+            return request(app).delete("/api/v1/reviews/books/1").send().set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(dbDeleteOne).toBeCalled();
             });
@@ -686,7 +693,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection", () => {
             dbDeleteOne.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).delete("/api/v1/reviews/books/1").send().then((response) => {
+            return request(app).delete("/api/v1/reviews/books/1").send().set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbDeleteOne).toBeCalled();
             });
@@ -703,7 +710,7 @@ describe("Reviews API", () => {
         it("Should delete a seller review if everything is fine", () => {
             dbDeleteOne.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).delete("/api/v1/reviews/sellers/1").send().then((response) => {
+            return request(app).delete("/api/v1/reviews/sellers/1").send().set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(dbDeleteOne).toBeCalled();
             });
@@ -712,7 +719,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection", () => {
             dbDeleteOne.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).delete("/api/v1/reviews/sellers/1").send().then((response) => {
+            return request(app).delete("/api/v1/reviews/sellers/1").send().set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbDeleteOne).toBeCalled();
             });
@@ -729,7 +736,7 @@ describe("Reviews API", () => {
         it("Should delete all reviews from one book if everything is fine", () => {
             dbDeleteMany.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).delete("/api/v1/reviews/books?bookId=1").send().then((response) => {
+            return request(app).delete("/api/v1/reviews/books?bookId=1").send().set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(dbDeleteMany).toBeCalled();
             });
@@ -738,7 +745,7 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection", () => {
             dbDeleteMany.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).delete("/api/v1/reviews/books?bookId=1").send().then((response) => {
+            return request(app).delete("/api/v1/reviews/books?bookId=1").send().set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbDeleteMany).toBeCalled();
             });
@@ -755,7 +762,7 @@ describe("Reviews API", () => {
         it("Should delete all reviews from one seller if everything is fine", () => {
             dbDeleteMany.mockImplementation(async () => Promise.resolve(true));
 
-            return request(app).delete("/api/v1/reviews/sellers?sellerId=1").send().then((response) => {
+            return request(app).delete("/api/v1/reviews/sellers?sellerId=1").send().set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(200);
                 expect(dbDeleteMany).toBeCalled();
             });
@@ -764,12 +771,11 @@ describe("Reviews API", () => {
         it("Should return 500 if there is a problem with the connection", () => {
             dbDeleteMany.mockImplementation(async () => Promise.reject("Connection failed"));
 
-            return request(app).delete("/api/v1/reviews/sellers?sellerId=1").send().then((response) => {
+            return request(app).delete("/api/v1/reviews/sellers?sellerId=1").send().set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbDeleteMany).toBeCalled();
             });
         });
     });
-
 
 });
