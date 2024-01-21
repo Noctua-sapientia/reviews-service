@@ -23,8 +23,9 @@ router.get('/count', async function(req, res, next) {
   console.log(bookId, customerId);
 
   filter = {};
-  if ( bookId ) { filter["bookId"] = bookId}
-  if ( customerId ) { filter["customerId"] = customerId}
+
+  if ( bookId ) { filter["bookId"] = bookId }
+  if ( customerId ) { filter["customerId"] = customerId }
 
   try {
     const result = await BookReview.countDocuments(filter);
@@ -132,20 +133,20 @@ router.post('/', async function(req, res, next) {
       
       await bookReview.save();
 
-      // let mean_rating = await BookReview.aggregate([
-      //   {
-      //       $match: { "bookId": bookId } // Filtra para obtener solo las reseñas del libro específico
-      //   },
-      //   {
-      //       $group: {
-      //           _id: null, // Agrupa todos los documentos filtrados
-      //           averageRating: { $avg: "$rating" } // Calcula el promedio de la calificación
-      //       }
-      //   }
-      // ]);
-      // mean_rating = mean_rating[0].averageRating;
+      let mean_rating = await BookReview.aggregate([
+        {
+            $match: { "bookId": bookId } // Filtra para obtener solo las reseñas del libro específico
+        },
+        {
+            $group: {
+                _id: null, // Agrupa todos los documentos filtrados
+                averageRating: { $avg: "$rating" } // Calcula el promedio de la calificación
+            }
+        }
+      ]);
+      mean_rating = mean_rating[0].averageRating;
       
-      // await Book.updateRatingBook(bookId, mean_rating);
+      await Book.updateRatingBook(bookId, mean_rating);
 
       res.status(201).json(bookReview.cleanup());
 

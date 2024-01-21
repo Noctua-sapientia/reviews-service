@@ -5,7 +5,7 @@ var SellerReview = require('../models/sellerReview');
 var debug = require('debug')('sellerReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
 const Order = require('../services/orders');
-const Seller = require("../services/users");
+const User = require("../services/users");
 
 
 /* GET reviews of sellers listing. */
@@ -56,8 +56,10 @@ router.get('/count', async function(req, res, next) {
   var customerId = req.query.customerId;
 
   filter = {};
-  if ( sellerId ) { filter["sellerId"] = sellerId}
-  if ( customerId ) { filter["customerId"] = customerId}
+
+  if ( sellerId ) { filter["sellerId"] = sellerId }
+  if ( customerId ) { filter["customerId"] = customerId }
+
 
   try {
     const result = await SellerReview.countDocuments(filter);
@@ -116,20 +118,20 @@ router.post('/', async function(req, res, next) {
       
       await sellerReview.save();
 
-      // let mean_rating = await SellerReview.aggregate([
-      //   {
-      //       $match: { "sellerId": sellerId } // Filtra para obtener solo las reseñas del libro específico
-      //   },
-      //   {
-      //       $group: {
-      //           _id: null, // Agrupa todos los documentos filtrados
-      //           averageRating: { $avg: "$rating" } // Calcula el promedio de la calificación
-      //       }
-      //   }
-      // ]);
-      // mean_rating = mean_rating[0].averageRating;
+      let mean_rating = await SellerReview.aggregate([
+        {
+            $match: { "sellerId": sellerId } // Filtra para obtener solo las reseñas del libro específico
+        },
+        {
+            $group: {
+                _id: null, // Agrupa todos los documentos filtrados
+                averageRating: { $avg: "$rating" } // Calcula el promedio de la calificación
+            }
+        }
+      ]);
+      mean_rating = mean_rating[0].averageRating;
       
-      // await Seller.updateRatingSeller(sellerId, mean_rating);
+      await User.updateRatingSeller(sellerId, mean_rating);
 
       res.status(201).json(sellerReview.cleanup());
     } else {
