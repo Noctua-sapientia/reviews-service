@@ -11,7 +11,7 @@ const existsBook = async function(isbn) {
         await axios.get(url);
         return true;
     } catch (e) {
-        if (e.response.status === 404) {
+        if (e.status === 404) {
             return false;
         } else {
             return null;

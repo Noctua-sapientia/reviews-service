@@ -2,6 +2,8 @@ const app = require('../app');
 const request = require("supertest");
 const BookReview = require('../models/bookReview');
 const SellerReview = require('../models/sellerReview');
+const Book = require('../services/books');
+const Order = require('../services/orders');
 
 describe("Reviews API", () => {
     describe("GET /", () => {
@@ -69,15 +71,18 @@ describe("Reviews API", () => {
         beforeEach(() => {
             dbSave = jest.spyOn(BookReview.prototype, "save");
             dbExists = jest.spyOn(BookReview, "exists");
+            bookExists = jest.spyOn(Book, "existsBook");
         })
 
         it("Should add a new book review if everything is fine", () => {
             dbExists.mockImplementation(async () => Promise.resolve(false));
             dbSave.mockImplementation(async () => Promise.resolve(true));
+            bookExists.mockImplementation(async () => Promise.resolve(true));
 
             return request(app).post("/api/v1/reviews/books").send({"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(201);
                 expect(dbSave).toBeCalled();
+                expect(bookExists).toBeCalled();
             });
         })
 
@@ -87,6 +92,7 @@ describe("Reviews API", () => {
             return request(app).post("/api/v1/reviews/books").send({"bookId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbSave).toBeCalled();
+                expect(bookExists).toBeCalled();
             });
         });
     });
@@ -99,15 +105,18 @@ describe("Reviews API", () => {
         beforeEach(() => {
             dbSave = jest.spyOn(SellerReview.prototype, "save");
             dbExists = jest.spyOn(SellerReview, "exists");
+            existsOrderBetweenCustomerSeller = jest.spyOn(Order, "existsOrder");
         })
 
         it("Should add a new seller review if everything is fine", () => {
             dbExists.mockImplementation(async () => Promise.resolve(false));
             dbSave.mockImplementation(async () => Promise.resolve(true));
+            existsOrderBetweenCustomerSeller.mockImplementation(async () => Promise.resolve(true));
 
             return request(app).post("/api/v1/reviews/sellers").send({"sellerId": 1, "customerId": 1, "description": "Muy chulo", "rating": 5}).then((response) => {
                 expect(response.statusCode).toBe(201);
                 expect(dbSave).toBeCalled();
+                expect(existsOrderBetweenCustomerSeller).toBeCalled();
             });
         })
 

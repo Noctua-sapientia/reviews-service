@@ -3,7 +3,8 @@ var router = express.Router();
 var BookReview = require('../models/bookReview');
 var debug = require('debug')('bookReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
-const { existsBook, updateRatingBook } = require("../services/books");
+const Book = require("../services/books");
+
 
 /*var book_reviews = [
   {"id": 1, "bookId": 2, "customerId": 3, "description": "El libro es genial, lo recomiendo",
@@ -111,9 +112,9 @@ Create a new review for a book
 router.post('/', async function(req, res, next) {
   const {bookId, customerId, description, rating} = req.body;
 
-  // const resExistsBook = await existsBook(bookId);
-  // if (resExistsBook === null) { return res.status(502).send("There is a problem in book microservice"); }
-  // if ( !resExistsBook ) { return res.status(400).send("There is not exist that book"); }
+  const resExistsBook = await Book.existsBook(bookId);
+  if (resExistsBook === null) { return res.status(502).send("There is a problem in book microservice"); }
+  if ( !resExistsBook ) { return res.status(400).send("There is not exist that book"); }
 
   if ( !validateRating(rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
   
@@ -141,7 +142,7 @@ router.post('/', async function(req, res, next) {
       // ]);
       // mean_rating = mean_rating[0].averageRating;
       
-      // await updateRatingBook(bookId, mean_rating);
+      // await Book.updateRatingBook(bookId, mean_rating);
 
       res.status(201).json(bookReview.cleanup());
 
