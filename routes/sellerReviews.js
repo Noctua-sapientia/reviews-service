@@ -53,9 +53,11 @@ router.get('/', async function(req, res, next) {
 */
 router.get('/count', async function(req, res, next) {
   var sellerId = req.query.sellerId;
+  var customerId = req.query.customerId;
 
   filter = {};
   if ( sellerId ) { filter["sellerId"] = sellerId}
+  if ( customerId ) { filter["customerId"] = customerId}
 
   try {
     const result = await SellerReview.countDocuments(filter);

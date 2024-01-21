@@ -19,9 +19,12 @@ const Book = require("../services/books");
 */
 router.get('/count', async function(req, res, next) {
   var bookId = req.query.bookId;
+  var customerId = req.query.customerId;
+  console.log(bookId, customerId);
 
   filter = {};
   if ( bookId ) { filter["bookId"] = bookId}
+  if ( customerId ) { filter["customerId"] = customerId}
 
   try {
     const result = await BookReview.countDocuments(filter);
