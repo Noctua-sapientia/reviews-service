@@ -160,12 +160,30 @@ router.put('/:id', async function(req, res, next) {
   if ( !validateRating(reviewData.rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
 
   try {
+    let exists = await SellerReview.exists({ sellerId: reviewData.sellerId, customerId: reviewData.customerId });
+    if (!exists) {
+      return res.status(404).send('Review not found');
+    }
+
     var updatedReview = await SellerReview.findByIdAndUpdate(reviewId, reviewData, {
       new: true
     });
-    if (!updatedReview) {
-      return res.status(404).send('Review not found');
-    }
+
+    let mean_rating = await SellerReview.aggregate([
+      {
+          $match: { "sellerId": reviewData.sellerId } // Filtra para obtener solo las reseñas del libro específico
+      },
+      {
+          $group: {
+              _id: null, // Agrupa todos los documentos filtrados
+              averageRating: { $avg: "$rating" } // Calcula el promedio de la calificación
+          }
+      }
+    ]);
+    mean_rating = mean_rating[0].averageRating;
+    
+    await User.updateRatingSeller(reviewData.sellerId, mean_rating);
+    
     res.status(200).json(updatedReview.cleanup());
   } catch (e) {
     if (e.errors) {

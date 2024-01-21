@@ -20,7 +20,6 @@ const Book = require("../services/books");
 router.get('/count', async function(req, res, next) {
   var bookId = req.query.bookId;
   var customerId = req.query.customerId;
-  console.log(bookId, customerId);
 
   filter = {};
 
@@ -145,7 +144,7 @@ router.post('/', async function(req, res, next) {
         }
       ]);
       mean_rating = mean_rating[0].averageRating;
-      
+      console.log(mean_rating);
       await Book.updateRatingBook(bookId, mean_rating);
 
       res.status(201).json(bookReview.cleanup());
@@ -174,12 +173,31 @@ router.put('/:id', async function(req, res, next) {
   if ( !validateRating(reviewData.rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
 
   try {
+    let exists = await BookReview.exists({ bookId: reviewData.bookId, customerId: reviewData.customerId });
+    if (!exists) {
+      return res.status(404).send('Review not found');
+    }
+
     var updatedReview = await BookReview.findByIdAndUpdate(reviewId, reviewData, {
       new: true
     });
-    if (!updatedReview) {
-      return res.status(404).send('Review not found');
-    }
+
+    let mean_rating = await BookReview.aggregate([
+      {
+          $match: { "bookId": reviewData.bookId } // Filtra para obtener solo las reseñas del libro específico
+      },
+      {
+          $group: {
+              _id: null, // Agrupa todos los documentos filtrados
+              averageRating: { $avg: "$rating" } // Calcula el promedio de la calificación
+          }
+      }
+    ]);
+    mean_rating = mean_rating[0].averageRating;
+    console.log(mean_rating);
+    
+    await Book.updateRatingBook(reviewData.bookId, mean_rating);
+
     res.status(200).json(updatedReview.cleanup());
   } catch (e) {
     if (e.errors) {
