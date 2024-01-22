@@ -8,8 +8,10 @@ const Order = require('../services/orders');
 const User = require("../services/users");
 const cors = require('cors');
 const validateJWT = require("../middlewares/validateJWT");
+const Comment = require("../services/checkComment");
 
 router.use(cors());
+
 
 /* GET reviews of sellers listing. */
 router.get('/', validateJWT, async function(req, res, next) {
@@ -118,6 +120,15 @@ router.post('/', validateJWT, async function(req, res, next) {
         description,
         rating
       })
+
+      let containsInsult = await Comment.checkComment(description);
+      if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
+      if (containsInsult) { 
+
+        // Aquí va el manejo del correo
+
+        return res.status(403).send('You must not use insults');
+      }
       
       await sellerReview.save();
 
@@ -166,6 +177,15 @@ router.put('/:id', validateJWT, async function(req, res, next) {
     let exists = await SellerReview.exists({ sellerId: reviewData.sellerId, customerId: reviewData.customerId });
     if (!exists) {
       return res.status(404).send('Review not found');
+    }
+
+    let containsInsult = await Comment.checkComment(description);
+    if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
+    if (containsInsult) { 
+
+      // Aquí va el manejo del correo
+      
+      return res.status(403).send('You must not use insults');
     }
 
     var updatedReview = await SellerReview.findByIdAndUpdate(reviewId, reviewData, {

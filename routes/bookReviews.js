@@ -133,6 +133,15 @@ router.post('/', validateJWT, async function(req, res, next) {
         description,
         rating
       })
+
+      let containsInsult = await Comment.checkComment(description);
+      if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
+      if (containsInsult) { 
+
+        // Aquí va el manejo del correo
+
+        return res.status(403).send('You must not use insults');
+      }
       
       await bookReview.save();
 
@@ -181,6 +190,15 @@ router.put('/:id', validateJWT, async function(req, res, next) {
     if (!exists) {
       return res.status(404).send('Review not found');
     }
+
+    let containsInsult = await Comment.checkComment(reviewData.description);
+      if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
+      if (containsInsult) { 
+
+        // Aquí va el manejo del correo
+
+        return res.status(403).send('You must not use insults');
+      }
 
     var updatedReview = await BookReview.findByIdAndUpdate(reviewId, reviewData, {
       new: true
