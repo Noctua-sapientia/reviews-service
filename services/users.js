@@ -17,9 +17,10 @@ const updateRatingSeller = async function(sellerId, rating,accessToken) {
           };
 
         let sellerData = await axios.get(urlGet,config);
-        sellerData.data.valoration = rating;
+        let sellerDataUpdate = sellerData.data;
+        sellerDataUpdate.valoration = rating;
         const urlPut = urlJoin(USERS_SERVICE, API_VERSION,'sellers');
-        await axios.put(urlPut, sellerData.data,config);
+        await axios.put(urlPut, sellerDataUpdate,config);
         return true;
     } catch (e) {
         console.error(e);

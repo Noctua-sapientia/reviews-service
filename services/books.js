@@ -11,7 +11,7 @@ const existsBook = async function(isbn,accessToken) {
         const headers = {
             Authorization: accessToken
           };
-          const config = {
+        const config = {
             headers: headers,
           };
         await axios.get(url,config);
@@ -43,7 +43,7 @@ const getBookDescription = async function(isbn,accessToken) {
     }
 }
 
-const updateRatingBook = async function(isbn, rating,accessToken) {
+const updateRatingBook = async function(isbn, rating, accessToken) {
 
     try {
         const url = urlJoin(BOOK_SERVICE, API_VERSION,'/books/', isbn.toString());
@@ -54,12 +54,12 @@ const updateRatingBook = async function(isbn, rating,accessToken) {
             headers: headers,
           };
         let bookData = await axios.get(url,config);
-        bookData.reviews = rating;
-
-        const response = await axios.put(url, bookData,config);
+        let bookDataUpdate = bookData.data;
+        bookDataUpdate.rating = rating;
+        const response = await axios.put(url, bookDataUpdate, config);
         return response.data;
     } catch (e) {
-        console.error(e);
+        console.log(e);
         return null;
     }
 }

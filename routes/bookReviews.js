@@ -122,7 +122,7 @@ router.post('/', validateJWT, async function(req, res, next) {
   const {bookId, customerId, description, rating} = req.body;
   const accessToken = req.headers.authorization;
 
-  const resExistsBook = await Book.existsBook(bookId);
+  const resExistsBook = await Book.existsBook(bookId, accessToken);
   if (resExistsBook === null) { return res.status(502).send("There is a problem in book microservice"); }
   if ( !resExistsBook ) { return res.status(400).send("There is not exist that book"); }
 
