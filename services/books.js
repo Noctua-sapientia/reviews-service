@@ -20,6 +20,17 @@ const existsBook = async function(isbn) {
     }
 }
 
+const getBookDescription = async function(isbn) {
+    try {
+        const url = urlJoin(BOOK_SERVICE, API_VERSION,'/books/', isbn.toString());
+        const response = await axios.get(url);
+        return response.data.title;
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
+}
+
 const updateRatingBook = async function(isbn, rating) {
 
     try {
@@ -39,5 +50,5 @@ const updateRatingBook = async function(isbn, rating) {
 
 module.exports = { 
     existsBook,
-    updateRatingBook
+    updateRatingBook,getBookDescription
 }

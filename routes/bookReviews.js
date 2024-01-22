@@ -4,6 +4,8 @@ var BookReview = require('../models/bookReview');
 var debug = require('debug')('bookReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
 const Book = require("../services/books");
+const sendEmail = require('../services/emailService');
+const User = require("../services/users");
 
 const cors = require('cors');
 const validateJWT = require("../middlewares/validateJWT");
@@ -118,12 +120,25 @@ Create a new review for a book
 
 router.post('/', validateJWT, async function(req, res, next) {
   const {bookId, customerId, description, rating} = req.body;
+  const accessToken = req.headers.authorization;
 
   const resExistsBook = await Book.existsBook(bookId);
   if (resExistsBook === null) { return res.status(502).send("There is a problem in book microservice"); }
   if ( !resExistsBook ) { return res.status(400).send("There is not exist that book"); }
 
   if ( !validateRating(rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
+
+  //comprobamos si tiene palabras malsonantes AQUI IRIA EL FAAS
+  const responseFaas = true;
+  //si devuelve q hay palabras malsonantes se manda un correo indicando que no se ha podido crear
+  if(responseFaas){
+    //buscamos el nombre y email del usuario
+    const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
+    const bookDescription = await Book.getBookDescription(bookId);
+    sendEmail(userOfReview.name, userOfReview.email,bookDescription, 'crear')
+
+    return res.status(400).send("Review has offensive words.");
+  }
   
   try {
     if (!await BookReview.exists({ bookId: bookId, customerId: customerId })) {
@@ -189,6 +204,17 @@ router.put('/:id', validateJWT, async function(req, res, next) {
     let exists = await BookReview.exists({ bookId: reviewData.bookId, customerId: reviewData.customerId });
     if (!exists) {
       return res.status(404).send('Review not found');
+    }
+    //comprobamos si tiene palabras malsonantes AQUI IRIA EL FAAS
+    const responseFaas = true;
+    //si devuelve q hay palabras malsonantes se manda un correo indicando que no se ha podido crear
+    if(responseFaas){
+      //buscamos el nombre y email del usuario
+      const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
+      const bookDescription = await Book.getBookDescription(bookId);
+      sendEmail(userOfReview.name, userOfReview.email,bookDescription, 'modificar')
+
+      return res.status(400).send("Review has offensive words.");
     }
 
     let containsInsult = await Comment.checkComment(reviewData.description);

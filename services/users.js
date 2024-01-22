@@ -21,7 +21,28 @@ const updateRatingSeller = async function(sellerId, rating) {
     }
 }
 
+const getCustomerInfo = async function(customerId,accessToken) {
+
+    try {
+        const urlGet = urlJoin(USERS_SERVICE, API_VERSION,'customers', customerId.toString());
+        const headers = {
+            Authorization: accessToken
+          };
+          const config = {
+            headers: headers,
+          };
+
+        const response = await axios.get(urlGet,config);
+        const customerData = response.data;
+        return {email : customerData.email, name : customerData.name};
+        
+    } catch (e) {
+        console.error("Error obtaining customer information:", error.message);
+        return null;
+    }
+}
+
 
 module.exports = {
-    updateRatingSeller
+    updateRatingSeller, getCustomerInfo
 }
