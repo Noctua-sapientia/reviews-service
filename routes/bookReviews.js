@@ -142,7 +142,7 @@ router.post('/', validateJWT, async function(req, res, next) {
       if (containsInsult === 'True') { 
         //buscamos el nombre y email del usuario
         const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
-        const bookDescription = await Book.getBookDescription(bookId);
+        const bookDescription = await Book.getBookDescription(bookId,accessToken);
         sendEmail(userOfReview.name, userOfReview.email,'libro',bookDescription, 'crear');
 
         return res.status(403).send('You must not use insults');
@@ -163,7 +163,7 @@ router.post('/', validateJWT, async function(req, res, next) {
       ]);
       mean_rating = mean_rating[0].averageRating;
       console.log(mean_rating);
-      await Book.updateRatingBook(bookId, mean_rating);
+      await Book.updateRatingBook(bookId, mean_rating,accessToken);
 
       res.status(201).json(bookReview.cleanup());
 
@@ -202,7 +202,7 @@ router.put('/:id', validateJWT, async function(req, res, next) {
 
         //buscamos el nombre y email del usuario
         const userOfReview = await User.getCustomerInfo(parseInt(reviewData.customerId),accessToken);
-        const bookDescription = await Book.getBookDescription(reviewData.bookId);
+        const bookDescription = await Book.getBookDescription(reviewData.bookId,accessToken);
         sendEmail(userOfReview.name, userOfReview.email,'libro',bookDescription, 'editar');
 
         return res.status(403).send('You must not use insults');
@@ -226,7 +226,7 @@ router.put('/:id', validateJWT, async function(req, res, next) {
     mean_rating = mean_rating[0].averageRating;
     console.log(mean_rating);
     
-    await Book.updateRatingBook(reviewData.bookId, mean_rating);
+    await Book.updateRatingBook(reviewData.bookId, mean_rating,accessToken);
 
     res.status(200).json(updatedReview.cleanup());
   } catch (e) {

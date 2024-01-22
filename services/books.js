@@ -5,10 +5,16 @@ const debug = require('debug')('reviews:book');
 const BOOK_SERVICE = process.env.BOOK_SERVICE || 'http://localhost:4002';
 const API_VERSION = '/api/v1';
 
-const existsBook = async function(isbn) {
+const existsBook = async function(isbn,accessToken) {
     try {
         const url = urlJoin(BOOK_SERVICE, API_VERSION,'/books/', isbn.toString());
-        await axios.get(url);
+        const headers = {
+            Authorization: accessToken
+          };
+          const config = {
+            headers: headers,
+          };
+        await axios.get(url,config);
         return true;
     } catch (e) {
         if (e.status === 404) {
@@ -20,10 +26,16 @@ const existsBook = async function(isbn) {
     }
 }
 
-const getBookDescription = async function(isbn) {
+const getBookDescription = async function(isbn,accessToken) {
     try {
         const url = urlJoin(BOOK_SERVICE, API_VERSION,'/books/', isbn.toString());
-        const response = await axios.get(url);
+        const headers = {
+            Authorization: accessToken
+          };
+          const config = {
+            headers: headers,
+          };
+        const response = await axios.get(url,config);
         return response.data.title;
     } catch (e) {
         console.error(e);
@@ -31,15 +43,20 @@ const getBookDescription = async function(isbn) {
     }
 }
 
-const updateRatingBook = async function(isbn, rating) {
+const updateRatingBook = async function(isbn, rating,accessToken) {
 
     try {
         const url = urlJoin(BOOK_SERVICE, API_VERSION,'/books/', isbn.toString());
-
-        let bookData = await axios.get(url);
+        const headers = {
+            Authorization: accessToken
+          };
+          const config = {
+            headers: headers,
+          };
+        let bookData = await axios.get(url,config);
         bookData.reviews = rating;
 
-        const response = await axios.put(url, bookData);
+        const response = await axios.put(url, bookData,config);
         return response.data;
     } catch (e) {
         console.error(e);

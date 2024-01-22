@@ -108,7 +108,7 @@ router.post('/', validateJWT, async function(req, res, next) {
   const accessToken = req.headers.authorization;
   const {sellerId, customerId, description, rating} = req.body;
 
-  const resExistsOrder = await Order.existsOrder(sellerId, customerId);
+  const resExistsOrder = await Order.existsOrder(sellerId, customerId,accessToken);
   if (resExistsOrder === null) { return res.status(502).send("There is a problem in orders microservice"); }
   if ( !resExistsOrder ) { return res.status(400).send("The user have not done any order to that seller, so he must not rate him"); }
 
@@ -151,7 +151,7 @@ router.post('/', validateJWT, async function(req, res, next) {
       ]);
       mean_rating = mean_rating[0].averageRating;
       
-      await User.updateRatingSeller(sellerId, mean_rating);
+      await User.updateRatingSeller(sellerId, mean_rating,accessToken);
 
       res.status(201).json(sellerReview.cleanup());
     } else {
@@ -213,7 +213,7 @@ router.put('/:id', validateJWT, async function(req, res, next) {
     ]);
     mean_rating = mean_rating[0].averageRating;
     
-    await User.updateRatingSeller(reviewData.sellerId, mean_rating);
+    await User.updateRatingSeller(reviewData.sellerId, mean_rating,accessToken);
     
     res.status(200).json(updatedReview.cleanup());
   } catch (e) {

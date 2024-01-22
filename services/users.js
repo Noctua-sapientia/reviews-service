@@ -5,15 +5,21 @@ const debug = require('debug')('reviews:users');
 const USERS_SERVICE = process.env.USERS_SERVICE || 'http://localhost:4001';
 const API_VERSION = '/api/v1';
 
-const updateRatingSeller = async function(sellerId, rating) {
+const updateRatingSeller = async function(sellerId, rating,accessToken) {
 
     try {
         const urlGet = urlJoin(USERS_SERVICE, API_VERSION,'sellers', sellerId.toString());
+        const headers = {
+            Authorization: accessToken
+          };
+          const config = {
+            headers: headers,
+          };
 
-        let sellerData = await axios.get(urlGet);
+        let sellerData = await axios.get(urlGet,config);
         sellerData.data.valoration = rating;
         const urlPut = urlJoin(USERS_SERVICE, API_VERSION,'sellers');
-        await axios.put(urlPut, sellerData.data);
+        await axios.put(urlPut, sellerData.data,config);
         return true;
     } catch (e) {
         console.error(e);
