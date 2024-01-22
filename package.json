@@ -24,6 +24,7 @@
     "mailgun-js": "^0.22.0",
     "mongoose": "^8.0.3",
     "morgan": "~1.9.1",
+    "resend": "^3.0.0",
     "url-join": "^4.0.1"
   },
   "devDependencies": {

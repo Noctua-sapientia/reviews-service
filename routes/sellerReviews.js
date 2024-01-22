@@ -105,7 +105,7 @@ router.get('/:id', validateJWT, async function(req, res, next) {
 
 /* POST sellerReview */
 router.post('/', validateJWT, async function(req, res, next) {
-
+  const accessToken = req.headers.authorization;
   const {sellerId, customerId, description, rating} = req.body;
 
   const resExistsOrder = await Order.existsOrder(sellerId, customerId);
@@ -126,9 +126,12 @@ router.post('/', validateJWT, async function(req, res, next) {
 
       let containsInsult = await Comment.checkComment(description);
       if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
-      if (containsInsult) { 
+      if (containsInsult === 'True') { 
 
-        // Aquí va el manejo del correo
+        //buscamos el nombre y email del usuario que escribe el comentario
+        const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
+        const sellerOfReview = await User.getCustomerInfo(parseInt(sellerId),accessToken);
+        sendEmail(userOfReview.name, userOfReview.email,'vendedor',sellerOfReview.name, 'crear');
 
         return res.status(403).send('You must not use insults');
       }
@@ -170,7 +173,7 @@ router.post('/', validateJWT, async function(req, res, next) {
 
 /* PUT sellerReview */
 router.put('/:id', validateJWT, async function(req, res, next) {
-
+  const accessToken = req.headers.authorization;
   var reviewId = req.params.id;
   var reviewData = req.body;
 
@@ -184,9 +187,11 @@ router.put('/:id', validateJWT, async function(req, res, next) {
 
     let containsInsult = await Comment.checkComment(description);
     if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
-    if (containsInsult) { 
+    if (containsInsult === 'True') { 
 
-      // Aquí va el manejo del correo
+      const userOfReview = await User.getCustomerInfo(parseInt(reviewData.customerId),accessToken);
+      const sellerOfReview = await User.getCustomerInfo(parseInt(reviewData.sellerId),accessToken);
+      sendEmail(userOfReview.name, userOfReview.email,'vendedor',sellerOfReview.name, 'editar');
       
       return res.status(403).send('You must not use insults');
     }

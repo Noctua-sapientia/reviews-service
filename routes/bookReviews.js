@@ -6,9 +6,9 @@ const { validateOrderField, validateSortField, validateLimit, validateOffset, va
 const Book = require("../services/books");
 const sendEmail = require('../services/emailService');
 const User = require("../services/users");
-
 const cors = require('cors');
 const validateJWT = require("../middlewares/validateJWT");
+const Comment = require("../services/checkComment");
 
 router.use(cors());
 
@@ -127,18 +127,6 @@ router.post('/', validateJWT, async function(req, res, next) {
   if ( !resExistsBook ) { return res.status(400).send("There is not exist that book"); }
 
   if ( !validateRating(rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
-
-  //comprobamos si tiene palabras malsonantes AQUI IRIA EL FAAS
-  const responseFaas = true;
-  //si devuelve q hay palabras malsonantes se manda un correo indicando que no se ha podido crear
-  if(responseFaas){
-    //buscamos el nombre y email del usuario
-    const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
-    const bookDescription = await Book.getBookDescription(bookId);
-    sendEmail(userOfReview.name, userOfReview.email,bookDescription, 'crear')
-
-    return res.status(400).send("Review has offensive words.");
-  }
   
   try {
     if (!await BookReview.exists({ bookId: bookId, customerId: customerId })) {
@@ -151,9 +139,11 @@ router.post('/', validateJWT, async function(req, res, next) {
 
       let containsInsult = await Comment.checkComment(description);
       if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
-      if (containsInsult) { 
-
-        // Aquí va el manejo del correo
+      if (containsInsult === 'True') { 
+        //buscamos el nombre y email del usuario
+        const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
+        const bookDescription = await Book.getBookDescription(bookId);
+        sendEmail(userOfReview.name, userOfReview.email,'libro',bookDescription, 'crear');
 
         return res.status(403).send('You must not use insults');
       }
@@ -194,7 +184,7 @@ router.post('/', validateJWT, async function(req, res, next) {
 
 /*PUT update book review information such as description and rating only those fields*/
 router.put('/:id', validateJWT, async function(req, res, next) {
-
+  const accessToken = req.headers.authorization;
   var reviewId = req.params.id;
   var reviewData = req.body;
 
@@ -205,23 +195,15 @@ router.put('/:id', validateJWT, async function(req, res, next) {
     if (!exists) {
       return res.status(404).send('Review not found');
     }
-    //comprobamos si tiene palabras malsonantes AQUI IRIA EL FAAS
-    const responseFaas = true;
-    //si devuelve q hay palabras malsonantes se manda un correo indicando que no se ha podido crear
-    if(responseFaas){
-      //buscamos el nombre y email del usuario
-      const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
-      const bookDescription = await Book.getBookDescription(bookId);
-      sendEmail(userOfReview.name, userOfReview.email,bookDescription, 'modificar')
-
-      return res.status(400).send("Review has offensive words.");
-    }
 
     let containsInsult = await Comment.checkComment(reviewData.description);
       if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
-      if (containsInsult) { 
+      if (containsInsult === 'True') { 
 
-        // Aquí va el manejo del correo
+        //buscamos el nombre y email del usuario
+        const userOfReview = await User.getCustomerInfo(parseInt(reviewData.customerId),accessToken);
+        const bookDescription = await Book.getBookDescription(reviewData.bookId);
+        sendEmail(userOfReview.name, userOfReview.email,'libro',bookDescription, 'editar');
 
         return res.status(403).send('You must not use insults');
       }
