@@ -8,8 +8,13 @@ const Order = require('../services/orders');
 const User = require("../services/users");
 const cors = require('cors');
 const validateJWT = require("../middlewares/validateJWT");
+const Comment = require("../services/checkComment");
 
 router.use(cors());
+
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = 'a56d1f7c0c817387a072692731ea60df7c3a6c19d82ddac228a9a4461f8c5a72';
+console.log(jwt.sign({}, SECRET_KEY, { expiresIn: '1h' }));
 
 /* GET reviews of sellers listing. */
 router.get('/', validateJWT, async function(req, res, next) {
@@ -100,10 +105,10 @@ router.get('/:id', validateJWT, async function(req, res, next) {
 
 /* POST sellerReview */
 router.post('/', validateJWT, async function(req, res, next) {
-
+  const accessToken = req.headers.authorization;
   const {sellerId, customerId, description, rating} = req.body;
 
-  const resExistsOrder = await Order.existsOrder(sellerId, customerId);
+  const resExistsOrder = await Order.existsOrder(sellerId, customerId,accessToken);
   if (resExistsOrder === null) { return res.status(502).send("There is a problem in orders microservice"); }
   if ( !resExistsOrder ) { return res.status(400).send("The user have not done any order to that seller, so he must not rate him"); }
 
@@ -118,6 +123,18 @@ router.post('/', validateJWT, async function(req, res, next) {
         description,
         rating
       })
+
+      let containsInsult = await Comment.checkComment(description);
+      if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
+      if (containsInsult === 'True') { 
+
+        //buscamos el nombre y email del usuario que escribe el comentario
+        const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
+        const sellerOfReview = await User.getCustomerInfo(parseInt(sellerId),accessToken);
+        sendEmail(userOfReview.name, userOfReview.email,'vendedor',sellerOfReview.name, 'crear');
+
+        return res.status(403).send('You must not use insults');
+      }
       
       await sellerReview.save();
 
@@ -134,7 +151,7 @@ router.post('/', validateJWT, async function(req, res, next) {
       ]);
       mean_rating = mean_rating[0].averageRating;
       
-      await User.updateRatingSeller(sellerId, mean_rating);
+      await User.updateRatingSeller(sellerId, mean_rating,accessToken);
 
       res.status(201).json(sellerReview.cleanup());
     } else {
@@ -156,7 +173,7 @@ router.post('/', validateJWT, async function(req, res, next) {
 
 /* PUT sellerReview */
 router.put('/:id', validateJWT, async function(req, res, next) {
-
+  const accessToken = req.headers.authorization;
   var reviewId = req.params.id;
   var reviewData = req.body;
 
@@ -166,6 +183,17 @@ router.put('/:id', validateJWT, async function(req, res, next) {
     let exists = await SellerReview.exists({ sellerId: reviewData.sellerId, customerId: reviewData.customerId });
     if (!exists) {
       return res.status(404).send('Review not found');
+    }
+
+    let containsInsult = await Comment.checkComment(description);
+    if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
+    if (containsInsult === 'True') { 
+
+      const userOfReview = await User.getCustomerInfo(parseInt(reviewData.customerId),accessToken);
+      const sellerOfReview = await User.getCustomerInfo(parseInt(reviewData.sellerId),accessToken);
+      sendEmail(userOfReview.name, userOfReview.email,'vendedor',sellerOfReview.name, 'editar');
+      
+      return res.status(403).send('You must not use insults');
     }
 
     var updatedReview = await SellerReview.findByIdAndUpdate(reviewId, reviewData, {
@@ -185,7 +213,7 @@ router.put('/:id', validateJWT, async function(req, res, next) {
     ]);
     mean_rating = mean_rating[0].averageRating;
     
-    await User.updateRatingSeller(reviewData.sellerId, mean_rating);
+    await User.updateRatingSeller(reviewData.sellerId, mean_rating,accessToken);
     
     res.status(200).json(updatedReview.cleanup());
   } catch (e) {

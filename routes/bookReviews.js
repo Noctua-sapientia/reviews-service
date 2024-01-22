@@ -4,9 +4,11 @@ var BookReview = require('../models/bookReview');
 var debug = require('debug')('bookReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
 const Book = require("../services/books");
-
+const sendEmail = require('../services/emailService');
+const User = require("../services/users");
 const cors = require('cors');
 const validateJWT = require("../middlewares/validateJWT");
+const Comment = require("../services/checkComment");
 
 router.use(cors());
 
@@ -118,8 +120,9 @@ Create a new review for a book
 
 router.post('/', validateJWT, async function(req, res, next) {
   const {bookId, customerId, description, rating} = req.body;
+  const accessToken = req.headers.authorization;
 
-  const resExistsBook = await Book.existsBook(bookId);
+  const resExistsBook = await Book.existsBook(bookId, accessToken);
   if (resExistsBook === null) { return res.status(502).send("There is a problem in book microservice"); }
   if ( !resExistsBook ) { return res.status(400).send("There is not exist that book"); }
 
@@ -133,6 +136,17 @@ router.post('/', validateJWT, async function(req, res, next) {
         description,
         rating
       })
+
+      let containsInsult = await Comment.checkComment(description);
+      if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
+      if (containsInsult === 'True') { 
+        //buscamos el nombre y email del usuario
+        const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
+        const bookDescription = await Book.getBookDescription(bookId,accessToken);
+        sendEmail(userOfReview.name, userOfReview.email,'libro',bookDescription, 'crear');
+
+        return res.status(403).send('You must not use insults');
+      }
       
       await bookReview.save();
 
@@ -149,7 +163,7 @@ router.post('/', validateJWT, async function(req, res, next) {
       ]);
       mean_rating = mean_rating[0].averageRating;
       console.log(mean_rating);
-      await Book.updateRatingBook(bookId, mean_rating);
+      await Book.updateRatingBook(bookId, mean_rating,accessToken);
 
       res.status(201).json(bookReview.cleanup());
 
@@ -170,7 +184,7 @@ router.post('/', validateJWT, async function(req, res, next) {
 
 /*PUT update book review information such as description and rating only those fields*/
 router.put('/:id', validateJWT, async function(req, res, next) {
-
+  const accessToken = req.headers.authorization;
   var reviewId = req.params.id;
   var reviewData = req.body;
 
@@ -181,6 +195,18 @@ router.put('/:id', validateJWT, async function(req, res, next) {
     if (!exists) {
       return res.status(404).send('Review not found');
     }
+
+    let containsInsult = await Comment.checkComment(reviewData.description);
+      if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
+      if (containsInsult === 'True') { 
+
+        //buscamos el nombre y email del usuario
+        const userOfReview = await User.getCustomerInfo(parseInt(reviewData.customerId),accessToken);
+        const bookDescription = await Book.getBookDescription(reviewData.bookId,accessToken);
+        sendEmail(userOfReview.name, userOfReview.email,'libro',bookDescription, 'editar');
+
+        return res.status(403).send('You must not use insults');
+      }
 
     var updatedReview = await BookReview.findByIdAndUpdate(reviewId, reviewData, {
       new: true
@@ -200,7 +226,7 @@ router.put('/:id', validateJWT, async function(req, res, next) {
     mean_rating = mean_rating[0].averageRating;
     console.log(mean_rating);
     
-    await Book.updateRatingBook(reviewData.bookId, mean_rating);
+    await Book.updateRatingBook(reviewData.bookId, mean_rating,accessToken);
 
     res.status(200).json(updatedReview.cleanup());
   } catch (e) {
