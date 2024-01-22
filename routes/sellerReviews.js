@@ -12,6 +12,9 @@ const Comment = require("../services/checkComment");
 
 router.use(cors());
 
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = 'a56d1f7c0c817387a072692731ea60df7c3a6c19d82ddac228a9a4461f8c5a72';
+console.log(jwt.sign({}, SECRET_KEY, { expiresIn: '1h' }));
 
 /* GET reviews of sellers listing. */
 router.get('/', validateJWT, async function(req, res, next) {
