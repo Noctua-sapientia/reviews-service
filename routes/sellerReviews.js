@@ -136,11 +136,11 @@ router.post('/', validateJWT, async function(req, res, next) {
         return res.status(403).send('You must not use insults');
       }
       
-      await sellerReview.save();
+      const seller = await sellerReview.save();
 
       let mean_rating = await SellerReview.aggregate([
         {
-            $match: { "sellerId": sellerId } // Filtra para obtener solo las reseñas del libro específico
+            $match: { "sellerId": seller.id } // Filtra para obtener solo las reseñas del libro específico
         },
         {
             $group: {

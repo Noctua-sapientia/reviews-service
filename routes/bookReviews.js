@@ -148,11 +148,10 @@ router.post('/', validateJWT, async function(req, res, next) {
         return res.status(403).send('You must not use insults');
       }
       
-      await bookReview.save();
-
+      const newBook = await bookReview.save();
       let mean_rating = await BookReview.aggregate([
         {
-            $match: { "bookId": bookId } // Filtra para obtener solo las reseñas del libro específico
+            $match: { "bookId": newBook.bookId } // Filtra para obtener solo las reseñas del libro específico
         },
         {
             $group: {
@@ -162,7 +161,6 @@ router.post('/', validateJWT, async function(req, res, next) {
         }
       ]);
       mean_rating = mean_rating[0].averageRating;
-      console.log(mean_rating);
       await Book.updateRatingBook(bookId, mean_rating,accessToken);
 
       res.status(201).json(bookReview.cleanup());
