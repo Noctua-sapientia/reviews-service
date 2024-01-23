@@ -108,11 +108,11 @@ router.get('/:id', validateJWT, async function(req, res, next) {
 router.post('/', validateJWT, async function(req, res, next) {
   const accessToken = req.headers.authorization;
   const {sellerId, customerId, description, rating} = req.body;
-
+/*
   const resExistsOrder = await Order.existsOrder(sellerId, customerId,accessToken);
   if (resExistsOrder === null) { return res.status(502).send("There is a problem in orders microservice"); }
   if ( !resExistsOrder ) { return res.status(400).send("The user have not done any order to that seller, so he must not rate him"); }
-
+*/
   if ( !validateRating(rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
 
   try {
@@ -141,7 +141,7 @@ router.post('/', validateJWT, async function(req, res, next) {
 
       let mean_rating = await SellerReview.aggregate([
         {
-            $match: { "sellerId": seller.id } // Filtra para obtener solo las reseñas del libro específico
+            $match: { "sellerId": seller.sellerId } // Filtra para obtener solo las reseñas del libro específico
         },
         {
             $group: {
@@ -150,7 +150,9 @@ router.post('/', validateJWT, async function(req, res, next) {
             }
         }
       ]);
+      console.log(mean_rating);
       mean_rating = mean_rating[0].averageRating;
+      console.log(mean_rating);
       
       await User.updateRatingSeller(sellerId, mean_rating,accessToken);
 
