@@ -49,7 +49,30 @@ const getCustomerInfo = async function(customerId,accessToken) {
     }
 }
 
+const getSellerInfo = async function(sellerId,accessToken) {
+
+  try {
+      const urlGet = urlJoin(USERS_SERVICE, API_VERSION,'sellers', sellerId.toString());
+      const headers = {
+          Authorization: accessToken
+        };
+        const config = {
+          headers: headers,
+        };
+
+      const response = await axios.get(urlGet,config);
+      const sellerData = response.data;
+      return {email : sellerData.email, name : sellerData.name};
+      
+  } catch (e) {
+      console.error("Error obtaining seller information:", error.message);
+      return null;
+  }
+}
+
 
 module.exports = {
-    updateRatingSeller, getCustomerInfo
+    updateRatingSeller,
+    getCustomerInfo,
+    getSellerInfo
 }

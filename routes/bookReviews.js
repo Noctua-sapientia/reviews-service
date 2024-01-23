@@ -4,11 +4,12 @@ var BookReview = require('../models/bookReview');
 var debug = require('debug')('bookReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
 const Book = require("../services/books");
-const sendEmail = require('../services/emailService');
+const Email = require('../services/emailService');
 const User = require("../services/users");
 const cors = require('cors');
 const validateJWT = require("../middlewares/validateJWT");
 const Comment = require("../services/checkComment");
+const { fireUpdateRatingBook } = require('../middlewares/circuitBreakerPattern');
 
 router.use(cors());
 
@@ -142,8 +143,8 @@ router.post('/', validateJWT, async function(req, res, next) {
       if (containsInsult === 'True') { 
         //buscamos el nombre y email del usuario
         const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
-        const bookDescription = await Book.getBookDescription(bookId,accessToken);
-        sendEmail(userOfReview.name, userOfReview.email,'libro',bookDescription, 'crear');
+        const bookTitle = await Book.getBookTitle(bookId,accessToken);
+        Email.sendEmail(userOfReview.name, userOfReview.email,'libro',bookTitle, 'crear');
 
         return res.status(403).send('You must not use insults');
       }
@@ -161,7 +162,7 @@ router.post('/', validateJWT, async function(req, res, next) {
         }
       ]);
       mean_rating = mean_rating[0].averageRating;
-      await Book.updateRatingBook(bookId, mean_rating,accessToken);
+      const bookUpdated = await fireUpdateRatingBook(bookId, mean_rating,accessToken);
 
       res.status(201).json(bookReview.cleanup());
 

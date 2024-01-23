@@ -6,6 +6,7 @@ var debug = require('debug')('sellerReviews-2:server');
 const { validateOrderField, validateSortField, validateLimit, validateOffset, validateRating } = require('./validator');
 const Order = require('../services/orders');
 const User = require("../services/users");
+const Email = require('../services/emailService');
 const cors = require('cors');
 const validateJWT = require("../middlewares/validateJWT");
 const Comment = require("../services/checkComment");
@@ -130,8 +131,8 @@ router.post('/', validateJWT, async function(req, res, next) {
 
         //buscamos el nombre y email del usuario que escribe el comentario
         const userOfReview = await User.getCustomerInfo(parseInt(customerId),accessToken);
-        const sellerOfReview = await User.getCustomerInfo(parseInt(sellerId),accessToken);
-        sendEmail(userOfReview.name, userOfReview.email,'vendedor',sellerOfReview.name, 'crear');
+        const sellerOfReview = await User.getSellerInfo(parseInt(sellerId),accessToken);
+        Email.sendEmail(userOfReview.name, userOfReview.email,'vendedor',sellerOfReview.name, 'crear');
 
         return res.status(403).send('You must not use insults');
       }
