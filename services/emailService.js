@@ -19,4 +19,6 @@ const sendEmail = async function(name, email,type,itemDescription, action){
   }
 };
 
-module.exports = sendEmail;
+module.exports = {
+  sendEmail
+};

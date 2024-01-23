@@ -26,7 +26,7 @@ const existsBook = async function(isbn,accessToken) {
     }
 }
 
-const getBookDescription = async function(isbn,accessToken) {
+const getBookTitle = async function(isbn,accessToken) {
     try {
         const url = urlJoin(BOOK_SERVICE, API_VERSION,'/books/', isbn.toString());
         const headers = {
@@ -67,5 +67,6 @@ const updateRatingBook = async function(isbn, rating, accessToken) {
 
 module.exports = { 
     existsBook,
-    updateRatingBook,getBookDescription
+    updateRatingBook,
+    getBookTitle
 }
