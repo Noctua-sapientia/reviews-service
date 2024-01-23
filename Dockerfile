@@ -1,4 +1,4 @@
-FROM node:13-alpine
+FROM node:14-alpine
 
 WORKDIR /app
 
@@ -12,8 +12,10 @@ COPY public ./public
 COPY routes/ ./routes
 COPY services/ ./services
 COPY models/ ./models
+COPY middlewares/ ./middlewares
 COPY app.js .
+COPY db.js .
 
-EXPOSE 3000
+EXPOSE 4004
 
 CMD npm start
