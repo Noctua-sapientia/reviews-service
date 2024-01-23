@@ -9,6 +9,7 @@ const User = require("../services/users");
 const cors = require('cors');
 const validateJWT = require("../middlewares/validateJWT");
 const Comment = require("../services/checkComment");
+const { fireUpdateRatingBook } = require('../middlewares/circuitBreakerPattern');
 
 router.use(cors());
 
@@ -161,7 +162,7 @@ router.post('/', validateJWT, async function(req, res, next) {
         }
       ]);
       mean_rating = mean_rating[0].averageRating;
-      await Book.updateRatingBook(bookId, mean_rating,accessToken);
+      const bookUpdated = await fireUpdateRatingBook(bookId, mean_rating,accessToken);
 
       res.status(201).json(bookReview.cleanup());
 
