@@ -201,8 +201,8 @@ router.put('/:id', validateJWT, async function(req, res, next) {
 
         //buscamos el nombre y email del usuario
         const userOfReview = await User.getCustomerInfo(parseInt(reviewData.customerId),accessToken);
-        const bookDescription = await Book.getBookDescription(reviewData.bookId,accessToken);
-        sendEmail(userOfReview.name, userOfReview.email,'libro',bookDescription, 'editar');
+        const bookDescription = await Book.getBookTitle(reviewData.bookId,accessToken);
+        Email.sendEmail(userOfReview.name, userOfReview.email,'libro',bookDescription, 'editar');
 
         return res.status(403).send('You must not use insults');
       }

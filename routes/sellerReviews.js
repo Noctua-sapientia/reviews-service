@@ -109,10 +109,10 @@ router.post('/', validateJWT, async function(req, res, next) {
   const accessToken = req.headers.authorization;
   const {sellerId, customerId, description, rating} = req.body;
 
-  const resExistsOrder = await Order.existsOrder(sellerId, customerId,accessToken);
+  /*const resExistsOrder = await Order.existsOrder(sellerId, customerId,accessToken);
   if (resExistsOrder === null) { return res.status(502).send("There is a problem in orders microservice"); }
   if ( !resExistsOrder ) { return res.status(400).send("The user have not done any order to that seller, so he must not rate him"); }
-
+*/
   if ( !validateRating(rating) ) { return res.status(400).send("Rating must be a number between 1 and 5."); }
 
   try {
@@ -188,13 +188,13 @@ router.put('/:id', validateJWT, async function(req, res, next) {
       return res.status(404).send('Review not found');
     }
 
-    let containsInsult = await Comment.checkComment(description);
+    let containsInsult = await Comment.checkComment(reviewData.description);
     if (containsInsult === null) { return res.status(502).send("There is a problem in comment service"); }
     if (containsInsult === 'True') { 
 
       const userOfReview = await User.getCustomerInfo(parseInt(reviewData.customerId),accessToken);
-      const sellerOfReview = await User.getCustomerInfo(parseInt(reviewData.sellerId),accessToken);
-      sendEmail(userOfReview.name, userOfReview.email,'vendedor',sellerOfReview.name, 'editar');
+      const sellerOfReview = await User.getSellerInfo(parseInt(reviewData.sellerId),accessToken);
+      Email.sendEmail(userOfReview.name, userOfReview.email,'vendedor',sellerOfReview.name, 'editar');
       
       return res.status(403).send('You must not use insults');
     }
