@@ -105,7 +105,7 @@ router.get('/:id', validateJWT, async function(req, res, next) {
 
 
 /* POST sellerReview */
-router.post('/', validateJWT, async function(req, res, next) {
+router.post('/', validateJWT, rateLimitMiddleware, async function(req, res, next) {
   const accessToken = req.headers.authorization;
   const {sellerId, customerId, description, rating} = req.body;
 
@@ -141,7 +141,7 @@ router.post('/', validateJWT, async function(req, res, next) {
 
       let mean_rating = await SellerReview.aggregate([
         {
-            $match: { "sellerId": seller.sellerId } // Filtra para obtener solo las reseñas del libro específico
+            $match: { "sellerId": seller.id } // Filtra para obtener solo las reseñas del libro específico
         },
         {
             $group: {
@@ -150,9 +150,7 @@ router.post('/', validateJWT, async function(req, res, next) {
             }
         }
       ]);
-      console.log(mean_rating);
       mean_rating = mean_rating[0].averageRating;
-      console.log(mean_rating);
       
       await User.updateRatingSeller(sellerId, mean_rating,accessToken);
 
@@ -175,7 +173,7 @@ router.post('/', validateJWT, async function(req, res, next) {
 
 
 /* PUT sellerReview */
-router.put('/:id', validateJWT, async function(req, res, next) {
+router.put('/:id', validateJWT, rateLimitMiddleware, async function(req, res, next) {
   const accessToken = req.headers.authorization;
   var reviewId = req.params.id;
   var reviewData = req.body;

@@ -7,10 +7,9 @@ const CHECKCOMMENT_SERVICE = process.env.CHECKCOMMENT_SERVICE || 'https://checkc
 const checkComment = async function(comment) {
 
     try {
-        let containsInsult = await axios.get(CHECKCOMMENT_SERVICE, {data: {frase: comment}});
+        let containsInsult = await axios.post(CHECKCOMMENT_SERVICE, {frase: comment});
         return containsInsult.data;
     } catch (e) {
-        console.log(88);
         console.error(e);
         return null;
     }

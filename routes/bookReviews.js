@@ -10,6 +10,7 @@ const cors = require('cors');
 const validateJWT = require("../middlewares/validateJWT");
 const Comment = require("../services/checkComment");
 const { fireUpdateRatingBook } = require('../middlewares/circuitBreakerPattern');
+const rateLimitMiddleware = require("../middlewares/ratelimit");
 
 router.use(cors());
 
@@ -119,7 +120,7 @@ router.get('/', validateJWT, async function(req, res, next) {
 Create a new review for a book
 */
 
-router.post('/', validateJWT, async function(req, res, next) {
+router.post('/', validateJWT, rateLimitMiddleware, async function(req, res, next) {
   const {bookId, customerId, description, rating} = req.body;
   const accessToken = req.headers.authorization;
 
@@ -182,7 +183,7 @@ router.post('/', validateJWT, async function(req, res, next) {
 });
 
 /*PUT update book review information such as description and rating only those fields*/
-router.put('/:id', validateJWT, async function(req, res, next) {
+router.put('/:id', validateJWT, rateLimitMiddleware, async function(req, res, next) {
   const accessToken = req.headers.authorization;
   var reviewId = req.params.id;
   var reviewData = req.body;

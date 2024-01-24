@@ -19,5 +19,9 @@ app.use('/', indexRouter);
 app.use('/api/v1/reviews/books', bookReviewsRouter);
 app.use('/api/v1/reviews/sellers', sellerReviewsRouter);
 
+app.get("/api/v1/reviews", (req, res) => {
+    res.redirect("https://app.swaggerhub.com/apis/TEAMREVIEW24/ReviewsAPI/1.0.0");
+});
+
 
 module.exports = app;
