@@ -105,7 +105,7 @@ router.get('/:id', validateJWT, async function(req, res, next) {
 
 
 /* POST sellerReview */
-router.post('/', validateJWT, async function(req, res, next) {
+router.post('/', validateJWT, rateLimitMiddleware, async function(req, res, next) {
   const accessToken = req.headers.authorization;
   const {sellerId, customerId, description, rating} = req.body;
 
@@ -173,7 +173,7 @@ router.post('/', validateJWT, async function(req, res, next) {
 
 
 /* PUT sellerReview */
-router.put('/:id', validateJWT, async function(req, res, next) {
+router.put('/:id', validateJWT, rateLimitMiddleware, async function(req, res, next) {
   const accessToken = req.headers.authorization;
   var reviewId = req.params.id;
   var reviewData = req.body;

@@ -736,7 +736,7 @@ describe("Reviews API", () => {
 
             return request(app).put("/api/v1/reviews/sellers/1").send(sellerReviewJSON).set('Authorization', jwtToken).then((response) => {
                 expect(response.statusCode).toBe(500);
-                expect(dbExists).toBeCalled();
+                expect(dbExists).toBeCalled(); 
             });
         });
 
